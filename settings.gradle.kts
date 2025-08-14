@@ -21,3 +21,16 @@ dependencyResolutionManagement {
 
 rootProject.name = "AdamDreamTeam"
 include(":app")
+include(":data")
+include(":bank")
+include(":chat")
+include(":handyman")
+include(":mechanic")
+include(":delivery")
+include(":eat")
+include(":hotel")
+include(":tinder")
+include(":laundry")
+include(":learn")
+include(":doctor")
+include(":uber")
