@@ -18,18 +18,14 @@ jobs:
             const core = require('@actions/core');
             const pr = context.payload.pull_request;
 
-            // Only run if PR targets main
             if (pr.base.ref === 'main') {
               if (pr.head.ref !== 'develop') {
-                // Post a comment on the PR
                 await github.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: pr.number,
                   body: `❌ This PR cannot be merged into \`main\`. Please make sure your PR branch is \`develop\`.`
                 });
-
-                // Fail the workflow to block merge
                 core.setFailed("Pull request source branch is not develop.");
               } else {
                 console.log("✅ PR is from develop. Check passed.");
