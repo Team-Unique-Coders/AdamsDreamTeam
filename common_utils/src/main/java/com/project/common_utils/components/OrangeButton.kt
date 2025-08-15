@@ -1,4 +1,4 @@
-package com.project.common_utils
+package com.project.common_utils.components
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width

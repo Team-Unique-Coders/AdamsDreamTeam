@@ -1,4 +1,4 @@
-package com.project.common_utils
+package com.project.common_utils.components
 
 
 import androidx.compose.foundation.Image
@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.project.common_utils.R
 
 @Composable
 fun CircularImageHolderUrl(
