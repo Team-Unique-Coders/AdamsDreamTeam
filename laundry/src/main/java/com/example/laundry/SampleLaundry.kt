@@ -1,4 +1,8 @@
 package com.example.laundry
 
-class SampleLaundry {
+import androidx.compose.runtime.Composable
+
+
+@Composable
+fun SampleLaundry() {
 }

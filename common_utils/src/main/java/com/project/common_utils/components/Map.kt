@@ -1,4 +1,4 @@
-package com.project.common_utils
+package com.project.common_utils.components
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
