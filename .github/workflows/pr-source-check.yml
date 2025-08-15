@@ -5,9 +5,8 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  build:
-    name: PR Check
   check-source-branch:
+    name: PR Check
     runs-on: ubuntu-latest
 
     steps:
@@ -16,6 +15,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const core = require('@actions/core');
             const pr = context.payload.pull_request;
 
             // Only run if PR targets main
