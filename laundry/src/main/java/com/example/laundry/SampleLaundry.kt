@@ -10,3 +10,7 @@ fun SampleLaundry() {
 @Composable
 fun Screen() {
 }
+
+@Composable
+fun Screen2() {
+}
