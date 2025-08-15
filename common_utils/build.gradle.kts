@@ -54,4 +54,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("io.coil-kt:coil-compose:2.6.0")
+    // origin version of osm android. You may be able to customize the version.
+    implementation("org.osmdroid:osmdroid-android:6.1.16")
+// This library dependencies
+    implementation("tech.utsmankece:osm-android-compose:0.0.5")
 }
