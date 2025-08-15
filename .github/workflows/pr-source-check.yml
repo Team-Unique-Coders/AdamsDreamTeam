@@ -5,6 +5,8 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
+  build:
+    name: PR Check
   check-source-branch:
     runs-on: ubuntu-latest
 
