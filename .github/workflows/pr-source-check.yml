@@ -1,0 +1,39 @@
+name: PR Source Branch Check
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  build:
+    name: PR Check
+  check-source-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check PR source branch
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+
+            // Only run if PR targets main
+            if (pr.base.ref === 'main') {
+              if (pr.head.ref !== 'develop') {
+                // Post a comment on the PR
+                await github.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: `❌ This PR cannot be merged into \`main\`. Please make sure your PR branch is \`develop\`.`
+                });
+
+                // Fail the workflow to block merge
+                core.setFailed("Pull request source branch is not develop.");
+              } else {
+                console.log("✅ PR is from develop. Check passed.");
+              }
+            } else {
+              console.log("PR is not targeting main. Skipping branch check.");
+            }
