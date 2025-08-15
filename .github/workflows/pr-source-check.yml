@@ -18,18 +18,28 @@ jobs:
             const core = require('@actions/core');
             const pr = context.payload.pull_request;
 
+            console.log(`Target branch: ${pr.base.ref}`);
+            console.log(`Source branch: ${pr.head.ref}`);
+
+            // If PR is targeting main
             if (pr.base.ref === 'main') {
               if (pr.head.ref !== 'develop') {
                 await github.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: pr.number,
-                  body: `❌ This PR cannot be merged into \`main\`. Please make sure your PR branch is \`develop\`.`
+                  body: `❌ This PR cannot be merged into \`main\`. Only PRs from \`develop\` are allowed.`
                 });
                 core.setFailed("Pull request source branch is not develop.");
               } else {
-                console.log("✅ PR is from develop. Check passed.");
+                console.log("✅ PR is from develop to main. Check passed.");
               }
-            } else {
-              console.log("PR is not targeting main. Skipping branch check.");
+            } 
+            // If PR is targeting develop → always allow
+            else if (pr.base.ref === 'develop') {
+              console.log("✅ PR targets develop. Allowed.");
+            } 
+            // Any other target branch → pass by default
+            else {
+              console.log(`ℹ️ PR targets ${pr.base.ref}. No restrictions applied.`);
             }
