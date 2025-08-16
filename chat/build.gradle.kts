@@ -62,6 +62,7 @@ dependencies {
 
     // for Icons.Filled / Icons.Outlined
     implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.coil.compose)
 
     // Tests
     testImplementation(libs.junit)

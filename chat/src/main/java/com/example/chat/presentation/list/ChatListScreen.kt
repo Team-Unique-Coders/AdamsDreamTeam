@@ -61,19 +61,19 @@ fun ChatListScreen(nav: NavController, vm: ChatListViewModel) {
 }
 
 @Composable
-fun ChatListPane(nav: NavController, vm: ChatListViewModel) {
+fun ChatListPane(nav: NavController, vm: ChatListViewModel,query: String = "") {
     val state by vm.state.collectAsState()
-    var query by remember { mutableStateOf("") }
 
-    OutlinedTextField(
-        value = query,
-        onValueChange = { query = it },
-        placeholder = { Text("Search") },
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .fillMaxWidth(),
-        singleLine = true
-    )
+
+    val filtered = remember(state.chats, query) {
+        val q = query.trim().lowercase()
+        if (q.isEmpty()) state.chats
+        else state.chats.filter { item ->
+            item.title.lowercase().contains(q) ||
+                    item.lastMessage.lowercase().contains(q)
+        }
+    }
+
 
     if (state.isLoading) {
         LinearProgressIndicator(Modifier.fillMaxWidth())

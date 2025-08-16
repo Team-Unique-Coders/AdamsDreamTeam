@@ -25,6 +25,8 @@ object ChatRoutes {
     const val GROUP_TOPIC = "chat/group/topic/{members}"
 
     const val NEW_CONTACT = "chat/contact/new"
+    const val SEARCH = "chat/search"
+
 
     fun detail(chatId: String) = "chat/detail/$chatId"
     fun groupTopic(vararg memberIds: String) =

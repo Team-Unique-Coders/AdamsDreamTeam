@@ -87,14 +87,35 @@ class CallsViewModel(private val repo: ChatRepository) : ViewModel() {
 // ---------- Pane (no Scaffold) ----------
 
 @Composable
-fun CallsPane(nav: NavController, vm: CallsViewModel) {
+fun CallsPane(
+    nav: NavController,
+    vm: CallsViewModel,
+    query: String = ""                  // ← from top bar
+) {
     val state by vm.state.collectAsState()
 
     if (state.isLoading) {
         LinearProgressIndicator(Modifier.fillMaxWidth())
     }
 
-    val sections = remember(state.items) { groupByDay(state.items) }
+    // Filter by contact name and simple type keywords
+    val filtered = remember(state.items, query) {
+        val q = query.trim().lowercase()
+        if (q.isEmpty()) state.items
+        else {
+            val typeMatch: (CallType) -> Boolean = when (q) {
+                "missed"   -> { t -> t == CallType.MISSED }
+                "incoming" -> { t -> t == CallType.INCOMING }
+                "outgoing" -> { t -> t == CallType.OUTGOING }
+                else       -> { _ -> false }
+            }
+            state.items.filter { item ->
+                item.name.lowercase().contains(q) || typeMatch(item.type)
+            }
+        }
+    }
+
+    val sections = remember(filtered) { groupByDay(filtered) }
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         sections.forEach { section ->
@@ -103,8 +124,7 @@ fun CallsPane(nav: NavController, vm: CallsViewModel) {
                     text = section.header,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(top = 8.dp, bottom = 6.dp)
+                    modifier = Modifier.padding(top = 8.dp, bottom = 6.dp)
                 )
                 Divider(Modifier.padding(bottom = 8.dp))
             }
@@ -118,6 +138,7 @@ fun CallsPane(nav: NavController, vm: CallsViewModel) {
         }
     }
 }
+
 
 @Composable
 private fun CallRow(item: CallItemUi, onClick: () -> Unit) {
