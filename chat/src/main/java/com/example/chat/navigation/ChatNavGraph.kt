@@ -17,7 +17,19 @@ object ChatRoutes {
     const val LIST = "chat/list"
     const val CONTACTS = "chat/contacts"
     const val DETAIL = "chat/detail/{chatId}"
+
+
+
+        // NEW:
+    const val GROUP_CREATE = "chat/group/create"
+    const val GROUP_TOPIC = "chat/group/topic/{members}"
+
+    const val NEW_CONTACT = "chat/contact/new"
+
     fun detail(chatId: String) = "chat/detail/$chatId"
+    fun groupTopic(vararg memberIds: String) =
+        "chat/group/topic/${memberIds.joinToString(",")}"
+
 }
 
 
@@ -27,6 +39,7 @@ object ChatRoutes {
  *   val chatRepo = remember { FakeChatRepository() }
  *   chatGraph(navController, chatRepo)
  */
+
 fun NavGraphBuilder.chatGraph(
     navController: NavController,
     repo: ChatRepository

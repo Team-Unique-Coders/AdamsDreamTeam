@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -53,6 +56,38 @@ fun ContactsPane(nav: NavController, vm: ContactsViewModel) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp)
     ) {
+        // NEW: quick actions at the top
+        item {
+            ElevatedCard(
+                onClick = { nav.navigate(ChatRoutes.GROUP_CREATE) },
+                        // dummy group chat
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+            ) {
+                ListItem(
+                    leadingContent = { Icon(Icons.Filled.Group, contentDescription = null) },
+                    headlineContent = { Text("New group") },
+                    supportingContent = { Text("Create a group conversation") }
+                )
+            }
+        }
+        item {
+            ElevatedCard(
+                onClick = { nav.navigate(ChatRoutes.NEW_CONTACT) }, // dummy new contact flow
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+            ) {
+                ListItem(
+                    leadingContent = { Icon(Icons.Filled.PersonAdd, contentDescription = null) },
+                    headlineContent = { Text("New contact") },
+                    supportingContent = { Text("Start a new chat") }
+                )
+            }
+        }
+
+        // Existing contacts
         items(state.contacts) { contact ->
             ElevatedCard(
                 onClick = { nav.navigate(ChatRoutes.detail("chat_${contact.id}")) },
@@ -68,4 +103,3 @@ fun ContactsPane(nav: NavController, vm: ContactsViewModel) {
         }
     }
 }
-

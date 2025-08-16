@@ -48,6 +48,10 @@ class ChatDetailViewModel(
                 _state.update { it.copy(title = name) }
             }
         }
+
+        viewModelScope.launch {
+            repo.markRead(chatId)
+        }
     }
 
     fun onInputChange(value: String) = _state.update { it.copy(input = value) }

@@ -3,6 +3,8 @@ package com.example.chat.domain.model
 enum class MessageType { TEXT, IMAGE, AUDIO }
 enum class MessageStatus { SENT, DELIVERED, READ }
 
+enum class CallType { INCOMING, OUTGOING, MISSED }
+
 data class Contact(
     val id: String,
     val name: String,
@@ -30,4 +32,14 @@ data class ChatSummary(
     val lastMessage: String,
     val lastTimestamp: Long,
     val unreadCount: Int = 0
+)
+// Calls
+
+data class CallLog(
+    val id: String,
+    val contactId: String,   // e.g., "c1"
+    val timestamp: Long,     // epoch millis
+    val durationSec: Int,    // 0 for missed
+    val type: CallType,
+    val isVideo: Boolean = false
 )
