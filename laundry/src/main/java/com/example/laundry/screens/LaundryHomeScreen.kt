@@ -44,12 +44,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.unit.sp
+import com.example.laundry.navigation.LaundryDestinations
 import java.nio.file.WatchEvent
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LaundryHomeScreen() {
+fun LaundryHomeScreen(
+    onOpen: (String) -> Unit = {},
+    onBack: () -> Unit = {},
+) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {}) {
@@ -131,7 +135,9 @@ fun LaundryHomeScreen() {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("120", color = Color.LightGray)
                     }
-                    IconButton(onClick = { /* click */ }) {
+                    IconButton(onClick = {
+                        onOpen(LaundryDestinations.FILTER)
+                    }) {
                         Icon(
                             painter = painterResource(id = com.project.common_utils.R.drawable.options),
                             contentDescription = "Options",
@@ -145,9 +151,10 @@ fun LaundryHomeScreen() {
             // Additional list items below
             items(10) { index ->
                 Box(
-                    modifier = Modifier.padding(0.dp,0.dp,0.dp,20.dp)
+                    modifier = Modifier.padding(0.dp,0.dp,0.dp,20.dp),
+
                 ){
-                    CardDetails(index)
+                    CardDetails(index,onOpen)
                 }
             }
             items(10) { index ->
@@ -278,7 +285,10 @@ fun WhiteBoxValueColumn(heading:String,value:String){
 }
 
 @Composable
-fun CardDetails(index:Int){
+fun CardDetails(
+    index:Int,
+    onOpen: (String) -> Unit = {}
+){
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -286,6 +296,7 @@ fun CardDetails(index:Int){
             // center over container
             .padding(horizontal = 20.dp)
             .offset(y = (30).dp)
+            .clickable{ onOpen(LaundryDestinations.MAPSCREEN)}
             .shadow(
                 elevation = 16.dp,
                 shape = RoundedCornerShape(16.dp),
@@ -305,25 +316,25 @@ fun CardDetails(index:Int){
             )
 
             Column(
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier.padding(5.dp)
             ) {
                 Text(
                     "Jessy Jones",
                     color = Color.Black,
                     fontSize = 18.sp
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     "Johannesburg",
                     color = Color.LightGray,
                     fontSize = 13.sp
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(3.dp))
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             }
 
             Row (
-                modifier = Modifier.fillMaxWidth().padding(10.dp,10.dp),
+                modifier = Modifier.fillMaxWidth().padding(10.dp,0.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ){

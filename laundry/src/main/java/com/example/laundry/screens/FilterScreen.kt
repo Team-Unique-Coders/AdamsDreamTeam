@@ -39,7 +39,10 @@ import androidx.compose.ui.unit.sp
 import com.project.common_utils.components.ReviewStars
 
 @Composable
-fun FilterScreen() {
+fun FilterScreen(
+    onOpen: (String) -> Unit = {},
+    onBack: () -> Unit = {},
+) {
     Scaffold(
         modifier = Modifier.background(Color.White),
         topBar = {
@@ -201,8 +204,3 @@ fun LargeDropdownMenu(
 
 
 
-@Preview(showBackground = true)
-@Composable
-fun FilterScreenPreview() {
-    FilterScreen()
-}

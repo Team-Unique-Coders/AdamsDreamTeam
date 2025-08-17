@@ -1,12 +1,7 @@
-package com.example.laundry
+package com.example.laundry.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,42 +14,49 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.laundry.components.HeadingText
 import com.example.laundry.components.StackedImages
+import com.example.laundry.navigation.LaundryDestinations
 import com.project.common_utils.components.OrangeButton
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LaundryScreen() {
+fun LaundryScreen(
+    onOpen: (String) -> Unit = {}
+) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+
     Scaffold(
-//        topBar = { TopAppBar(title = { Text("Laundry") }) },
         floatingActionButton = {
-            FloatingActionButton(onClick = {}) {
+            FloatingActionButton(onClick = { onOpen("home") }) { // <- change "home" if needed
                 Icon(Icons.Filled.Home, contentDescription = "Go to Home")
             }
         }
-    ) {paddingValues ->
-        Column (
-            modifier = Modifier.padding(paddingValues),
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color(0xFFF8F8F8)),
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
+            Spacer(Modifier.height(12.dp))
             StackedImages()
             HeadingText()
-            Spacer(modifier = Modifier.height(screenHeight * 0.2f))
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-                contentAlignment = Alignment.Center) {
+
+            Spacer(modifier = Modifier.height(screenHeight * 0.1f))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 OrangeButton(
-                    onClick = {},
+                    onClick = { onOpen(LaundryDestinations.HOME)  }, // example: navigate elsewhere in app
                     text = "Let's go"
                 )
             }
@@ -62,11 +64,8 @@ fun LaundryScreen() {
     }
 }
 
-
-
 @Preview(showBackground = true)
 @Composable
-fun LaundryScreenPreview(){
+private fun LaundryScreenPreview() {
     LaundryScreen()
 }
-

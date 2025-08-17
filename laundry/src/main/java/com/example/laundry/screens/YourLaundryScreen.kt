@@ -29,10 +29,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.laundry.navigation.LaundryDestinations
 import com.project.common_utils.components.RangeSliderComponent
 
 @Composable
-fun YourLaundryScreen() {
+fun YourLaundryScreen(
+    onOpen: (String) -> Unit = {},
+    onBack: () -> Unit = {},
+) {
     Scaffold(
         modifier = Modifier.background(Color.White),
         topBar = {
@@ -53,7 +57,9 @@ fun YourLaundryScreen() {
                     .padding(16.dp)
             ) {
                 Button(
-                    onClick = {},
+                    onClick = {
+                        onOpen(LaundryDestinations.ORDERLAUNDRY)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFF9800), // Orange background
@@ -165,9 +171,6 @@ fun IroningCheckbox() {
         }
     }
 }
-
-
-
 
 
 @Preview(showBackground = true)
