@@ -20,8 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.project.common_utils.BackArrowIcon
-import com.project.common_utils.OrangeButton
+import com.project.common_utils.components.BackArrowIcon
+import com.project.common_utils.components.OrangeButton
 
 @Composable
 fun LearnOrderCheckoutScreen(

@@ -13,10 +13,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
+import com.example.chat.entry.ChatEntry
 import com.project.adamdreamteam.ui.home.HomePage
-import com.example.handyman.navigation.HandymanNavEntry
 import com.example.learn.navigation.LearnNavEntry
-import com.example.mechanic.navigation.MechanicNavEntry
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,17 +40,23 @@ fun AppNavHost(
         composable(Routes.LEARN) {
             LearnNavEntry()
         }
-        composable(Routes.CHAT) { StubScreen("Chat") }
+        composable(Routes.CHAT) {
+            ChatEntry(
+                onClose = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
         composable(Routes.LAUNDRY) { StubScreen("Laundry") }
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
-        composable(Routes.HANDYMAN) {
-            HandymanNavEntry()   // mounts the whole Handyman flow
-        }
-        composable(Routes.MECHANIC) {
-            MechanicNavEntry()
-        }
+        composable(Routes.HANDYMAN) { StubScreen("Handyman") }
+        composable(Routes.MECHANIC) { StubScreen("Mechanic") }
 
 
         composable(Routes.BANK) {
