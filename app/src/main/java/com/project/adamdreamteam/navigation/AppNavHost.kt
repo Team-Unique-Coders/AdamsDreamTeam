@@ -14,8 +14,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
 import com.example.chat.entry.ChatEntry
+import com.example.handyman.navigation.HandymanNavEntry
 import com.project.adamdreamteam.ui.home.HomePage
 import com.example.learn.navigation.LearnNavEntry
+import com.example.mechanic.navigation.MechanicNavEntry
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,8 +57,8 @@ fun AppNavHost(
         composable(Routes.LAUNDRY) { StubScreen("Laundry") }
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
-        composable(Routes.HANDYMAN) { StubScreen("Handyman") }
-        composable(Routes.MECHANIC) { StubScreen("Mechanic") }
+        composable(Routes.HANDYMAN) { HandymanNavEntry() }
+        composable(Routes.MECHANIC) { MechanicNavEntry() }
 
 
         composable(Routes.BANK) {

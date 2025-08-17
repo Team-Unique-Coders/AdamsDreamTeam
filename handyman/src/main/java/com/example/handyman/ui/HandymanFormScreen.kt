@@ -25,10 +25,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.project.common_utils.BackArrowIcon
-import com.project.common_utils.OrangeButton
-import com.project.common_utils.SearchField
 import com.project.common_utils.ThreeValueSlider
+import com.project.common_utils.components.BackArrowIcon
+import com.project.common_utils.components.OrangeButton
+import com.project.common_utils.components.SearchField
 
 @Composable
 fun HandymanFormScreen(

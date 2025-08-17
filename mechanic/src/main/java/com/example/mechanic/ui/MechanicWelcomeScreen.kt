@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.project.common_utils.OrangeButton
+import com.project.common_utils.components.OrangeButton
 
 /** 00.Mechanic – intro screen (title + “Let’s go”) */
 @Composable

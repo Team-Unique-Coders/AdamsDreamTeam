@@ -6,13 +6,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.project.common_utils.BackArrowIcon
-import com.project.common_utils.OrangeButton
-import com.project.common_utils.ReviewStars
 import com.project.common_utils.ThreeValueSlider
 
 // Use the standalone model in FiltersState.kt
 import com.example.handyman.ui.FiltersState
+import com.project.common_utils.components.BackArrowIcon
+import com.project.common_utils.components.OrangeButton
+import com.project.common_utils.components.ReviewStars
 
 @Composable
 fun FiltersScreen(
