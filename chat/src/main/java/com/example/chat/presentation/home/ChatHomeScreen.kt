@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -37,11 +38,11 @@ fun ChatHomeScreen(
     nav: NavController,
     listVm: ChatListViewModel,
     contactsVm: ContactsViewModel,
-    callsVm: CallsViewModel? = null
+    callsVm: CallsViewModel? = null,
+    onClose: (() -> Unit)? = null
 ) {
     var tab by rememberSaveable { mutableStateOf(0) }
 
-    // per-tab queries
     var chatsQuery by rememberSaveable { mutableStateOf("") }
     var contactsQuery by rememberSaveable { mutableStateOf("") }
     var callsQuery by rememberSaveable { mutableStateOf("") }
@@ -52,14 +53,12 @@ fun ChatHomeScreen(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
 
-    // Back button exits search first
     BackHandler(enabled = isSearching) {
         isSearching = false
         kb?.hide()
         focusManager.clearFocus()
     }
 
-    // Focus the field when search opens; hide keyboard when it closes
     LaunchedEffect(isSearching, tab) {
         if (isSearching) {
             focusRequester.requestFocus()
@@ -74,6 +73,13 @@ fun ChatHomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Chat") },
+                navigationIcon = {
+                    if (onClose != null) {
+                        IconButton(onClick = onClose) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                },
                 actions = {
                     IconButton(onClick = { isSearching = !isSearching }) {
                         Icon(Icons.Filled.Search, contentDescription = "Search")
@@ -94,7 +100,6 @@ fun ChatHomeScreen(
                 Tab(selected = tab == 2, onClick = { tab = 2 }) { Text("Calls", Modifier.padding(16.dp)) }
             }
 
-            // Search field for active tab
             if (isSearching) {
                 val (value, setter, placeholder) = when (tab) {
                     0 -> Triple(chatsQuery, { v: String -> chatsQuery = v }, "Search chats")
@@ -123,7 +128,6 @@ fun ChatHomeScreen(
                 )
             }
 
-            // Content area with a tap-catcher overlay when searching
             Box(Modifier.fillMaxSize()) {
                 // Actual content
                 when (tab) {
@@ -148,7 +152,6 @@ fun ChatHomeScreen(
                     }
                 }
 
-                // Transparent overlay that closes search on first tap (doesn't cover the search field)
                 if (isSearching) {
                     Box(
                         Modifier

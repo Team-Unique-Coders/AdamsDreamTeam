@@ -22,18 +22,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import com.example.chat.domain.model.Contact
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.background
-import androidx.compose.ui.draw.clip
-import coil.compose.SubcomposeAsyncImage
-import androidx.compose.ui.layout.ContentScale
 import com.example.chat.presentation.ui.Avatar
 
 
@@ -72,13 +66,12 @@ fun ContactsScreen(nav: NavController, vm: ContactsViewModel) {
 fun ContactsPane(
     nav: NavController,
     vm: ContactsViewModel,
-    query: String = ""              // ← from top-bar search
+    query: String = ""
 ) {
     val state by vm.state.collectAsState()
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    // ----- filter -----
     val filtered = remember(state.contacts, query) {
         val q = query.trim().lowercase()
         if (q.isEmpty()) state.contacts
@@ -88,7 +81,6 @@ fun ContactsPane(
         }
     }
 
-    // When searching: flat list (no quick actions, no sections, no index bar)
     if (query.isNotBlank()) {
         if (state.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
 
@@ -114,7 +106,6 @@ fun ContactsPane(
         return
     }
 
-    // ----- build sections (Favorites + A..Z) -----
     data class Section(val key: String, val header: String, val items: List<Contact>)
 
     val favorites = filtered.filter { it.isStarred }
@@ -134,19 +125,17 @@ fun ContactsPane(
         if (!hash.isNullOrEmpty()) add(Section(key = "#", header = "#", items = hash))
     }
 
-    // Pre-compute header indices for fast scroll (include quick actions items)
     val headerIndex: Map<String, Int> = remember(sections) {
         var idx = 0
-        idx += 2 // quick actions (New contact, New group)
+        idx += 2
         buildMap {
             sections.forEach { sec ->
                 put(sec.key, idx)
-                idx += 1 + sec.items.size // header + rows
+                idx += 1 + sec.items.size
             }
         }
     }
 
-    // ----- UI -----
     if (state.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
 
     Box(Modifier.fillMaxSize()) {
@@ -154,7 +143,6 @@ fun ContactsPane(
             state = listState,
             contentPadding = PaddingValues(16.dp)
         ) {
-            // Quick actions
             item {
                 ElevatedCard(
                     onClick = { nav.navigate(ChatRoutes.NEW_CONTACT) },
@@ -188,7 +176,6 @@ fun ContactsPane(
                 }
             }
 
-            // Sectioned contacts
             sections.forEach { section ->
                 stickyHeader {
                     Row(
@@ -231,8 +218,6 @@ fun ContactsPane(
             }
         }
 
-        // Right-side index bar (hidden if no sections)
-        // Right-side index bar: always show A–Z; optional ★ if favorites exist
         val alphabet = ('A'..'Z').map { it.toString() }
         val showStar = favorites.isNotEmpty()
 
@@ -242,7 +227,6 @@ fun ContactsPane(
                 .padding(end = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Optional ★ for Favorites
             if (showStar) {
                 val enabled = headerIndex.containsKey("*")
                 Text(
@@ -262,7 +246,6 @@ fun ContactsPane(
                 )
             }
 
-            // A–Z always visible. If a letter has no section, dim it and jump to nearest available section.
             alphabet.forEach { letter ->
                 val enabled = headerIndex.containsKey(letter)
                 Text(

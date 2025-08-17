@@ -20,7 +20,7 @@ import coil.compose.SubcomposeAsyncImage
 @Composable
 fun Avatar(
     name: String,
-    url: String?,                 // pass null/blank for initials fallback
+    url: String?,
     size: Dp = 40.dp
 ) {
     val initials = remember(name) {

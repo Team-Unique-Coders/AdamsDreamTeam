@@ -23,14 +23,15 @@ import com.example.chat.presentation.group.GroupCreateViewModel
 import com.example.chat.presentation.group.GroupTopicScreen
 import com.example.chat.presentation.group.GroupTopicViewModel
 
+
 @Composable
-fun ChatEntry() {
+fun ChatEntry(onClose: (() -> Unit)? = null) {
     val nav = rememberNavController()
-    val repo = remember { FakeChatRepository() } // one instance for the whole flow
+    val repo = remember { FakeChatRepository() }
 
     NavHost(navController = nav, startDestination = ChatRoutes.HOME) {
 
-        // Tabs page (Chats / Contacts)
+
         composable(ChatRoutes.HOME) {
             val listVm: ChatListViewModel = viewModel(factory = ChatListViewModel.factory(repo))
             val contactsVm: ContactsViewModel = viewModel(factory = ContactsViewModel.factory(repo))
@@ -40,18 +41,19 @@ fun ChatEntry() {
                 nav = nav,
                 listVm = listVm,
                 contactsVm = contactsVm,
-                callsVm = callsVm                                      // ← pass
+                callsVm = callsVm,
+                onClose = onClose
             )
         }
 
 
-        // Group creation: select members
+
         composable(ChatRoutes.GROUP_CREATE) {
             val vm: GroupCreateViewModel = viewModel(factory = GroupCreateViewModel.factory(repo))
             GroupCreateScreen(nav = nav, vm = vm)
         }
 
-        // Group creation: set topic/name
+
         composable(
             route = ChatRoutes.GROUP_TOPIC,
             arguments = listOf(navArgument("members") { type = NavType.StringType })
@@ -60,7 +62,6 @@ fun ChatEntry() {
             GroupTopicScreen(nav = nav, vm = vm)
         }
 
-        // Conversation page
         composable(
             route = ChatRoutes.DETAIL,
             arguments = listOf(navArgument("chatId") { type = NavType.StringType })
@@ -69,7 +70,7 @@ fun ChatEntry() {
             ChatDetailScreen(nav = nav, vm = vm)
         }
 
-        // New contact form
+
         composable(ChatRoutes.NEW_CONTACT) {
             val vm: NewContactViewModel = viewModel(factory = NewContactViewModel.factory(repo))
             NewContactScreen(nav = nav, vm = vm)

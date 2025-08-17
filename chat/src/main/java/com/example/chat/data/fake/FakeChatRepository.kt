@@ -17,7 +17,6 @@ class FakeChatRepository : ChatRepository {
 
     private val meId = "me"
 
-    // ---- Contacts (now mutable via StateFlow) ----
     private val contactsState = MutableStateFlow(
         listOf(
             Contact("c1", "Rebecca Moore", emailOrPhone = "rebeccaca@gmail.com", isStarred = true),
@@ -27,7 +26,6 @@ class FakeChatRepository : ChatRepository {
         )
     )
 
-    // ---- Chats list (canonical ids: chat_<contactId>, group_<uuid>) ----
     private val chatsState = MutableStateFlow(
         listOf(
             ChatSummary(id = "chat_c1", title = "Rebecca Moore",  avatarUrl = null,
@@ -42,7 +40,6 @@ class FakeChatRepository : ChatRepository {
         )
     )
 
-    // ---- Messages per chat (keys match chat id) ----
     private val messagesByChat: MutableMap<String, MutableStateFlow<List<Message>>> =
         mutableMapOf<String, MutableStateFlow<List<Message>>>().apply {
             put("chat_c1", MutableStateFlow(seedFor("chat_c1", "c1")))
@@ -52,11 +49,9 @@ class FakeChatRepository : ChatRepository {
         }
 
     init {
-        // Make sure summaries reflect the actual last message in each thread on startup
         syncAllSummariesFromMessages()
     }
 
-    // Seed with distinct last messages so the list looks real
     private fun seedFor(chatId: String, otherId: String): List<Message> {
         val now = System.currentTimeMillis()
         fun msg(from: String, secondsAgo: Long, text: String) = Message(
@@ -96,9 +91,6 @@ class FakeChatRepository : ChatRepository {
         }
     }
 
-    // ---- Calls (dummy log) ----
-    // ---- Calls (dummy log) ----
-    // ---- Calls (dummy log) ----
     private val callsState = MutableStateFlow(
         listOf(
             // Today
@@ -121,7 +113,6 @@ class FakeChatRepository : ChatRepository {
 
 
 
-    // Create a thread when opening from Contacts if none exists yet
     private fun ensureThread(chatId: String) {
         if (!messagesByChat.containsKey(chatId)) {
             val flow = MutableStateFlow<List<Message>>(emptyList())
@@ -136,7 +127,7 @@ class FakeChatRepository : ChatRepository {
                 val greeting = Message(
                     id = UUID.randomUUID().toString(),
                     chatId = chatId,
-                    senderId = contactId,   // from that contact
+                    senderId = contactId,
                     sentAt = now - 30_000L,
                     type = MessageType.TEXT,
                     text = "Hi there 👋"
@@ -172,8 +163,7 @@ class FakeChatRepository : ChatRepository {
         }
     }
 
-    // --- Keep chat summaries in sync with the actual last message in each thread ---
-    private fun syncSummaryFromMessages(chatId: String) {
+        private fun syncSummaryFromMessages(chatId: String) {
         val last = messagesByChat[chatId]?.value?.lastOrNull() ?: return
         chatsState.value = chatsState.value.map {
             if (it.id == chatId) it.copy(lastMessage = last.text ?: "", lastTimestamp = last.sentAt)
@@ -184,13 +174,12 @@ class FakeChatRepository : ChatRepository {
         messagesByChat.keys.forEach { syncSummaryFromMessages(it) }
     }
 
-    // ---- Contract implementation ----
     override fun chats(): StateFlow<List<ChatSummary>> = chatsState
 
     override fun messages(chatId: String) =
         messagesByChat.getOrPut(chatId) {
-            ensureThread(chatId)       // lazily create if needed
-            messagesByChat[chatId]!!   // safe after ensureThread
+            ensureThread(chatId)
+            messagesByChat[chatId]!!
         }
 
     override fun contacts() = contactsState
@@ -250,14 +239,12 @@ class FakeChatRepository : ChatRepository {
         return id
     }
 
-    // Clears unread count for the given conversation
     override suspend fun markRead(chatId: String) {
         chatsState.value = chatsState.value.map { chat ->
             if (chat.id == chatId) chat.copy(unreadCount = 0) else chat
         }
     }
 
-    // ---- NEW: Create a contact and return its ID ----
     override suspend fun createContact(name: String, emailOrPhone: String?): String {
         val id = "c${UUID.randomUUID().toString().take(8)}"
         val contact = Contact(id = id, name = name.ifBlank { "New Contact" }, emailOrPhone = emailOrPhone)

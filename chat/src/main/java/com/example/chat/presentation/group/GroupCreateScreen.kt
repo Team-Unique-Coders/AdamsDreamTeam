@@ -22,7 +22,6 @@ import com.example.chat.navigation.ChatRoutes
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-// ---------- ViewModel ----------
 
 data class GroupCreateUiState(
     val contacts: List<Contact> = emptyList(),
@@ -55,7 +54,6 @@ class GroupCreateViewModel(private val repo: ChatRepository) : ViewModel() {
     }
 }
 
-// ---------- Screen ----------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

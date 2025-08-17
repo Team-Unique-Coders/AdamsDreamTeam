@@ -13,20 +13,15 @@ import com.example.chat.presentation.list.ChatListViewModel
 
 object ChatRoutes {
     const val ROOT = "chat"
-    const val HOME = "chat/home"           // ← add this line
+    const val HOME = "chat/home"
     const val LIST = "chat/list"
     const val CONTACTS = "chat/contacts"
     const val DETAIL = "chat/detail/{chatId}"
-
-
-
-        // NEW:
     const val GROUP_CREATE = "chat/group/create"
     const val GROUP_TOPIC = "chat/group/topic/{members}"
 
     const val NEW_CONTACT = "chat/contact/new"
     const val SEARCH = "chat/search"
-
 
     fun detail(chatId: String) = "chat/detail/$chatId"
     fun groupTopic(vararg memberIds: String) =
@@ -35,12 +30,7 @@ object ChatRoutes {
 }
 
 
-/**
- * Register the Chat graph inside your App's NavHost.
- * Usage from your app NavHost (a @Composable):
- *   val chatRepo = remember { FakeChatRepository() }
- *   chatGraph(navController, chatRepo)
- */
+
 
 fun NavGraphBuilder.chatGraph(
     navController: NavController,

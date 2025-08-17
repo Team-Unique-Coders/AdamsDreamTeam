@@ -21,8 +21,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// ---------- ViewModel ----------
-
 data class NewContactUiState(
     val name: String = "",
     val contact: String = "",
@@ -53,7 +51,6 @@ class NewContactViewModel(private val repo: ChatRepository) : ViewModel() {
     }
 }
 
-// ---------- Screen ----------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

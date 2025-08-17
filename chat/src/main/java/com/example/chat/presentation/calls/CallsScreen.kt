@@ -33,7 +33,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 
-// ---------- UI models ----------
 
 data class CallItemUi(
     val id: String,
@@ -43,10 +42,9 @@ data class CallItemUi(
     val durationSec: Int,
     val type: CallType,
     val isVideo: Boolean,
-    val avatarUrl: String?          // ← use shared Avatar everywhere
+    val avatarUrl: String?
 )
 
-// Section model
 private data class DaySection(val header: String, val items: List<CallItemUi>)
 
 data class CallsUiState(
@@ -54,7 +52,6 @@ data class CallsUiState(
     val isLoading: Boolean = true
 )
 
-// ---------- ViewModel ----------
 
 class CallsViewModel(private val repo: ChatRepository) : ViewModel() {
 
@@ -82,13 +79,12 @@ class CallsViewModel(private val repo: ChatRepository) : ViewModel() {
     }
 }
 
-// ---------- Pane (no Scaffold) ----------
 
 @Composable
 fun CallsPane(
     nav: NavController,
     vm: CallsViewModel,
-    query: String = ""                  // ← from top bar
+    query: String = ""
 ) {
     val state by vm.state.collectAsState()
 
@@ -96,7 +92,6 @@ fun CallsPane(
         LinearProgressIndicator(Modifier.fillMaxWidth())
     }
 
-    // Filter by contact name and keywords (incoming/outgoing/missed)
     val filtered = remember(state.items, query) {
         val q = query.trim().lowercase()
         if (q.isEmpty()) state.items
@@ -161,7 +156,7 @@ private fun CallRow(item: CallItemUi, onClick: () -> Unit) {
                     Icon(
                         ico,
                         contentDescription = if (item.isVideo) "Video call" else "Call",
-                        tint = Color(0xFF2E7D32) // green
+                        tint = Color(0xFF2E7D32)
                     )
                 }
             }
@@ -172,14 +167,13 @@ private fun CallRow(item: CallItemUi, onClick: () -> Unit) {
 @Composable
 private fun DirectionIcon(type: CallType) {
     val (icon, tint) = when (type) {
-        CallType.INCOMING -> Icons.Filled.CallReceived to Color(0xFF2E7D32) // green
-        CallType.OUTGOING -> Icons.Filled.CallMade     to Color(0xFFF57C00) // orange
-        CallType.MISSED  -> Icons.Filled.CallMissed    to Color(0xFFD32F2F) // red
+        CallType.INCOMING -> Icons.Filled.CallReceived to Color(0xFF2E7D32)
+        CallType.OUTGOING -> Icons.Filled.CallMade     to Color(0xFFF57C00)
+        CallType.MISSED  -> Icons.Filled.CallMissed    to Color(0xFFD32F2F)
     }
     Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
 }
 
-// ---------- helpers ----------
 
 private fun formatDuration(sec: Int, type: CallType): String {
     if (type == CallType.MISSED || sec <= 0) return ""

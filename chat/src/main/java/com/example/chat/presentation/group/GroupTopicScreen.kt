@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// ---------- ViewModel ----------
 
 data class GroupTopicUiState(
     val title: String = "",
@@ -65,7 +64,6 @@ class GroupTopicViewModel(
     }
 }
 
-// ---------- Screen ----------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

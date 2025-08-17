@@ -36,7 +36,17 @@ fun AppNavHost(
         composable(Routes.TINDER) { StubScreen("Tinder") }
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
         composable(Routes.LEARN) { StubScreen("Learn") }
-        composable(Routes.CHAT) { ChatEntry() }
+        composable(Routes.CHAT) {
+            ChatEntry(
+                onClose = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
         composable(Routes.LAUNDRY) { StubScreen("Laundry") }
         composable(Routes.EAT) { StubScreen("Eat") }

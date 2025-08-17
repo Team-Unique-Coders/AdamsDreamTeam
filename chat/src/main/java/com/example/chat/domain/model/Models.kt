@@ -33,13 +33,12 @@ data class ChatSummary(
     val lastTimestamp: Long,
     val unreadCount: Int = 0
 )
-// Calls
 
 data class CallLog(
     val id: String,
-    val contactId: String,   // e.g., "c1"
-    val timestamp: Long,     // epoch millis
-    val durationSec: Int,    // 0 for missed
+    val contactId: String,
+    val timestamp: Long,
+    val durationSec: Int,
     val type: CallType,
     val isVideo: Boolean = false
 )

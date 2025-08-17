@@ -15,14 +15,13 @@ import com.example.chat.presentation.ui.ChatListItem
 @Composable
 fun ChatListScreen(nav: NavController, vm: ChatListViewModel) {
     val state by vm.state.collectAsState()
-    var query by remember { mutableStateOf("") } // search placeholder; not filtering yet
+    var query by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Chat") }) }
     ) { padding ->
         Column(Modifier.padding(padding)) {
 
-            // Tabs like your design
             TabRow(selectedTabIndex = 0) {
                 Tab(selected = true, onClick = {}) { Text("Chats", Modifier.padding(16.dp)) }
                 Tab(selected = false, onClick = { nav.navigate(ChatRoutes.CONTACTS) }) {
@@ -31,7 +30,6 @@ fun ChatListScreen(nav: NavController, vm: ChatListViewModel) {
                 Tab(selected = false, onClick = {}) { Text("Calls", Modifier.padding(16.dp)) }
             }
 
-            // Optional: a simple search field (no logic yet)
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },

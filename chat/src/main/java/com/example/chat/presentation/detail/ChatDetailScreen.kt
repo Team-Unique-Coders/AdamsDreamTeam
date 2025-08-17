@@ -22,7 +22,6 @@ import androidx.navigation.NavController
 fun ChatDetailScreen(nav: NavController, vm: ChatDetailViewModel) {
     val state by vm.state.collectAsState()
 
-    // Auto-scroll to last message
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
@@ -33,7 +32,7 @@ fun ChatDetailScreen(nav: NavController, vm: ChatDetailViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.title) }, // <-- shows person's name
+                title = { Text(state.title) },
                 navigationIcon = {
                     IconButton(onClick = { nav.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
@@ -79,7 +78,6 @@ fun ChatDetailScreen(nav: NavController, vm: ChatDetailViewModel) {
                 }
             }
 
-            // Typing… indicator (shows under messages, above composer)
             if (state.isPeerTyping) {
                 Row(
                     modifier = Modifier
@@ -97,7 +95,6 @@ fun ChatDetailScreen(nav: NavController, vm: ChatDetailViewModel) {
 
             Divider()
 
-            // Composer
             Row(
                 Modifier
                     .fillMaxWidth()
