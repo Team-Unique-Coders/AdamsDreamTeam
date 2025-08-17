@@ -1,10 +1,8 @@
 package com.example.chat.presentation.calls
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CallMade
@@ -15,27 +13,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import com.example.chat.domain.model.CallLog
 import com.example.chat.domain.model.CallType
 import com.example.chat.domain.repository.ChatRepository
 import com.example.chat.navigation.ChatRoutes
+import com.example.chat.presentation.ui.Avatar
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import androidx.compose.ui.graphics.Color
 import java.util.Locale
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 
 // ---------- UI models ----------
 
@@ -46,7 +42,8 @@ data class CallItemUi(
     val timestamp: Long,
     val durationSec: Int,
     val type: CallType,
-    val isVideo: Boolean
+    val isVideo: Boolean,
+    val avatarUrl: String?          // ← use shared Avatar everywhere
 )
 
 // Section model
@@ -63,15 +60,16 @@ class CallsViewModel(private val repo: ChatRepository) : ViewModel() {
 
     val state = combine(repo.calls(), repo.contacts()) { calls, contacts ->
         val items = calls.sortedByDescending { it.timestamp }.map { c ->
-            val name = contacts.firstOrNull { it.id == c.contactId }?.name ?: "Unknown"
+            val contact = contacts.firstOrNull { it.id == c.contactId }
             CallItemUi(
                 id = c.id,
                 contactId = c.contactId,
-                name = name,
+                name = contact?.name ?: "Unknown",
                 timestamp = c.timestamp,
                 durationSec = c.durationSec,
                 type = c.type,
-                isVideo = c.isVideo
+                isVideo = c.isVideo,
+                avatarUrl = contact?.avatarUrl
             )
         }
         CallsUiState(items = items, isLoading = false)
@@ -98,7 +96,7 @@ fun CallsPane(
         LinearProgressIndicator(Modifier.fillMaxWidth())
     }
 
-    // Filter by contact name and simple type keywords
+    // Filter by contact name and keywords (incoming/outgoing/missed)
     val filtered = remember(state.items, query) {
         val q = query.trim().lowercase()
         if (q.isEmpty()) state.items
@@ -139,7 +137,6 @@ fun CallsPane(
     }
 }
 
-
 @Composable
 private fun CallRow(item: CallItemUi, onClick: () -> Unit) {
     ElevatedCard(
@@ -147,13 +144,8 @@ private fun CallRow(item: CallItemUi, onClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth()
     ) {
         ListItem(
-            // Avatar only on the left
-            leadingContent = { Avatar(name = item.name) },
-
-            // Name on the first line
-            headlineContent = { Text(item.name, fontWeight = FontWeight.SemiBold) },
-
-            // ↓ Direction icon sits on the same row as time/duration (under the name)
+            leadingContent = { Avatar(name = item.name, url = item.avatarUrl, size = 40.dp) },
+            headlineContent = { Text(item.name) },
             supportingContent = {
                 val time = timeOfDay(item.timestamp)
                 val dur = formatDuration(item.durationSec, item.type)
@@ -163,35 +155,17 @@ private fun CallRow(item: CallItemUi, onClick: () -> Unit) {
                     Text("$time${if (dur.isNotEmpty()) " • $dur" else ""}")
                 }
             },
-
-            // Call action on the right
             trailingContent = {
                 IconButton(onClick = onClick) {
                     val ico = if (item.isVideo) Icons.Filled.Videocam else Icons.Filled.Call
-                    Icon(ico, contentDescription = if (item.isVideo) "Video call" else "Call", tint = Color(0xFF2E7D32))
+                    Icon(
+                        ico,
+                        contentDescription = if (item.isVideo) "Video call" else "Call",
+                        tint = Color(0xFF2E7D32) // green
+                    )
                 }
             }
         )
-    }
-}
-
-
-@Composable
-private fun Avatar(name: String, size: Dp = 40.dp) {
-    val initials = remember(name) {
-        name.split(" ")
-            .mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }
-            .take(2)
-            .joinToString("")
-    }
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(initials, style = MaterialTheme.typography.labelLarge)
     }
 }
 
@@ -204,7 +178,6 @@ private fun DirectionIcon(type: CallType) {
     }
     Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
 }
-
 
 // ---------- helpers ----------
 
@@ -232,17 +205,11 @@ private fun groupByDay(items: List<CallItemUi>): List<DaySection> {
         }
     }
 
-    // group -> sort calls inside each group -> then sort groups by newest call
     return items
         .groupBy { headerFor(it.timestamp) }
-        .map { (header, calls) ->
-            DaySection(header, calls.sortedByDescending { it.timestamp })
-        }
-        .sortedByDescending { section ->
-            section.items.firstOrNull()?.timestamp ?: 0L
-        }
+        .map { (header, calls) -> DaySection(header, calls.sortedByDescending { it.timestamp }) }
+        .sortedByDescending { section -> section.items.firstOrNull()?.timestamp ?: 0L }
 }
-
 
 private fun sameDay(a: Calendar, b: Calendar): Boolean =
     a.get(Calendar.YEAR) == b.get(Calendar.YEAR) &&

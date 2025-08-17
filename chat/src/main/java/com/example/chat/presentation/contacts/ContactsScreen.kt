@@ -34,9 +34,7 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import coil.compose.SubcomposeAsyncImage
 import androidx.compose.ui.layout.ContentScale
-
-
-
+import com.example.chat.presentation.ui.Avatar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,10 +103,11 @@ fun ContactsPane(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     ListItem(
-                        leadingContent = { ContactAvatar(name = contact.name, url = contact.avatarUrl) },
+                        leadingContent = { Avatar(name = contact.name, url = contact.avatarUrl) },
                         headlineContent = { Text(contact.name) },
                         supportingContent = { Text(contact.emailOrPhone ?: "") }
                     )
+
                 }
             }
         }
@@ -222,7 +221,7 @@ fun ContactsPane(
                             .padding(vertical = 6.dp)
                     ) {
                         ListItem(
-                            leadingContent = { ContactAvatar(name = contact.name, url = contact.avatarUrl) },
+                            leadingContent = { Avatar(name = contact.name, url = contact.avatarUrl) },
                             headlineContent = { Text(contact.name) },
                             supportingContent = { Text(contact.emailOrPhone ?: "") }
                         )
@@ -289,40 +288,6 @@ fun ContactsPane(
                         }
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun ContactAvatar(name: String, url: String?) {
-    val initials = remember(name) {
-        name.split(" ")
-            .mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }
-            .take(2)
-            .joinToString("")
-    }
-    Box(
-        modifier = Modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center
-    ) {
-        if (url.isNullOrBlank()) {
-            // Fallback: initials
-            Text(initials, style = MaterialTheme.typography.labelLarge)
-        } else {
-            // Load photo; while loading or on error, show initials
-            SubcomposeAsyncImage(
-                model = url,
-                contentDescription = null,
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-                loading = { Text(initials, style = MaterialTheme.typography.labelLarge) },
-                error   = { Text(initials, style = MaterialTheme.typography.labelLarge) }
-            )
         }
     }
 }
