@@ -7,6 +7,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.project.common_utils.*
+import com.project.common_utils.components.BackArrowIcon
+import com.project.common_utils.components.OrangeButton
+import com.project.common_utils.components.StarsIcon
 
 @Composable
 fun MechanicProviderProfileScreen(

@@ -13,6 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.project.common_utils.*
+import com.project.common_utils.components.BackArrowIcon
+import com.project.common_utils.components.CircularImageHolderDrawable
+import com.project.common_utils.components.OrangeButton
+import com.project.common_utils.components.ReviewStars
+import com.project.common_utils.components.SearchField
 
 data class MechanicUi(
     val id: String,
