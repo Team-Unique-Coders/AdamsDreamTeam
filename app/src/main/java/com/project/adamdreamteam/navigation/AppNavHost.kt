@@ -15,6 +15,8 @@ import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
 import com.example.chat.entry.ChatEntry
 import com.project.adamdreamteam.ui.home.HomePage
+import com.example.learn.navigation.LearnNavEntry
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +37,9 @@ fun AppNavHost(
         composable(Routes.UBER) { StubScreen("Uber") }
         composable(Routes.TINDER) { StubScreen("Tinder") }
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
-        composable(Routes.LEARN) { StubScreen("Learn") }
+        composable(Routes.LEARN) {
+            LearnNavEntry()
+        }
         composable(Routes.CHAT) {
             ChatEntry(
                 onClose = {
