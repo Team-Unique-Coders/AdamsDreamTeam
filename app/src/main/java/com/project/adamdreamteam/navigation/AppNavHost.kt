@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
 import com.project.adamdreamteam.ui.home.HomePage
 import com.example.handyman.navigation.HandymanNavEntry
+import com.example.learn.navigation.LearnNavEntry
 import com.example.mechanic.navigation.MechanicNavEntry
 
 
@@ -37,7 +38,9 @@ fun AppNavHost(
         composable(Routes.UBER) { StubScreen("Uber") }
         composable(Routes.TINDER) { StubScreen("Tinder") }
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
-        composable(Routes.LEARN) { StubScreen("Learn") }
+        composable(Routes.LEARN) {
+            LearnNavEntry()
+        }
         composable(Routes.CHAT) { StubScreen("Chat") }
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
         composable(Routes.LAUNDRY) { StubScreen("Laundry") }
