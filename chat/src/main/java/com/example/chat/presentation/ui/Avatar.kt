@@ -38,8 +38,14 @@ fun Avatar(
         contentAlignment = Alignment.Center
     ) {
         if (url.isNullOrBlank()) {
-            Text(initials, style = MaterialTheme.typography.labelLarge)
+            // Plain initials
+            Text(
+                text = initials,
+                style = MaterialTheme.typography.labelLarge,
+                maxLines = 1
+            )
         } else {
+            // Photo with centered placeholders
             SubcomposeAsyncImage(
                 model = url,
                 contentDescription = null,
@@ -47,8 +53,30 @@ fun Avatar(
                     .matchParentSize()
                     .clip(CircleShape),
                 contentScale = ContentScale.Crop,
-                loading = { Text(initials, style = MaterialTheme.typography.labelLarge) },
-                error   = { Text(initials, style = MaterialTheme.typography.labelLarge) }
+                loading = {
+                    Box(
+                        modifier = Modifier.matchParentSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = initials,
+                            style = MaterialTheme.typography.labelLarge,
+                            maxLines = 1
+                        )
+                    }
+                },
+                error = {
+                    Box(
+                        modifier = Modifier.matchParentSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = initials,
+                            style = MaterialTheme.typography.labelLarge,
+                            maxLines = 1
+                        )
+                    }
+                }
             )
         }
     }

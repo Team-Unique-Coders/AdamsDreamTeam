@@ -26,6 +26,12 @@ class ChatListViewModel(private val repo: ChatRepository) : ViewModel() {
         }
     }
 
+    fun deleteChat(chatId: String) {
+        viewModelScope.launch {
+            repo.deleteChat(chatId)
+        }
+    }
+
     companion object {
         fun factory(repo: com.example.chat.domain.repository.ChatRepository) =
             viewModelFactory {

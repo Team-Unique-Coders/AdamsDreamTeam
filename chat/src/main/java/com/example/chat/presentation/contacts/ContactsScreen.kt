@@ -15,16 +15,21 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.chat.navigation.ChatRoutes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import com.example.chat.domain.model.Contact
 import kotlinx.coroutines.launch
@@ -71,6 +76,8 @@ fun ContactsPane(
     val state by vm.state.collectAsState()
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val cardShape = MaterialTheme.shapes.medium
+
 
     val filtered = remember(state.contacts, query) {
         val q = query.trim().lowercase()
@@ -89,19 +96,54 @@ fun ContactsPane(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(filtered) { contact ->
-                ElevatedCard(
-                    onClick = { nav.navigate(ChatRoutes.detail("chat_${contact.id}")) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    ListItem(
-                        leadingContent = { Avatar(name = contact.name, url = contact.avatarUrl) },
-                        headlineContent = { Text(contact.name) },
-                        supportingContent = { Text(contact.emailOrPhone ?: "") }
-                    )
+            items(filtered, key = { it.id }) { contact ->
+                val dismissState = rememberSwipeToDismissBoxState(
+                    confirmValueChange = { value ->
+                        if (value == SwipeToDismissBoxValue.EndToStart) {
+                            vm.deleteContact(contact.id); true
+                        } else false
+                    }
+                )
 
+                SwipeToDismissBox(
+                    state = dismissState,
+                    enableDismissFromStartToEnd = false,
+                    backgroundContent = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(vertical = 6.dp)           // ← match foreground spacing
+                                .clip(cardShape)                     // ← match card shape
+                                .background(MaterialTheme.colorScheme.errorContainer),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Spacer(Modifier.weight(1f))
+                            Icon(
+                                Icons.Filled.Delete,
+                                contentDescription = "Delete",
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(end = 24.dp)
+                            )
+                        }
+                    }
+                ) {
+                    ElevatedCard(
+                        onClick = { nav.navigate(ChatRoutes.detail("chat_${contact.id}")) },
+                        shape = cardShape,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)               // ← same spacing as background
+                    ) {
+                        ListItem(
+                            leadingContent = { Avatar(name = contact.name, url = contact.avatarUrl) },
+                            headlineContent = { Text(contact.name) },
+                            supportingContent = { Text(contact.emailOrPhone ?: "") }
+                        )
+                    }
                 }
             }
+
+
         }
         return
     }
@@ -200,21 +242,53 @@ fun ContactsPane(
                     }
                     Divider()
                 }
-                items(section.items) { contact ->
-                    ElevatedCard(
-                        onClick = { nav.navigate(ChatRoutes.detail("chat_${contact.id}")) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                    ) {
-                        ListItem(
-                            leadingContent = { Avatar(name = contact.name, url = contact.avatarUrl) },
-                            headlineContent = { Text(contact.name) },
-                            supportingContent = { Text(contact.emailOrPhone ?: "") }
-                        )
+                items(section.items, key = { it.id }) { contact ->
+                    val dismissState = rememberSwipeToDismissBoxState(
+                        confirmValueChange = { value ->
+                            if (value == SwipeToDismissBoxValue.EndToStart) {
+                                vm.deleteContact(contact.id); true
+                            } else false
+                        }
+                    )
 
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        enableDismissFromStartToEnd = false,
+                        backgroundContent = {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(vertical = 6.dp)           // ← match spacing
+                                    .clip(cardShape)                     // ← match shape
+                                    .background(MaterialTheme.colorScheme.errorContainer),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Spacer(Modifier.weight(1f))
+                                Icon(
+                                    Icons.Filled.Delete,
+                                    contentDescription = "Delete",
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.padding(end = 24.dp)
+                                )
+                            }
+                        }
+                    ) {
+                        ElevatedCard(
+                            onClick = { nav.navigate(ChatRoutes.detail("chat_${contact.id}")) },
+                            shape = cardShape,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                        ) {
+                            ListItem(
+                                leadingContent = { Avatar(name = contact.name, url = contact.avatarUrl) },
+                                headlineContent = { Text(contact.name) },
+                                supportingContent = { Text(contact.emailOrPhone ?: "") }
+                            )
+                        }
                     }
                 }
+
             }
         }
 

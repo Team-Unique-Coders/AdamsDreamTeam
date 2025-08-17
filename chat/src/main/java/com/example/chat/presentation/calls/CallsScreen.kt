@@ -1,18 +1,22 @@
 package com.example.chat.presentation.calls
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CallMade
 import androidx.compose.material.icons.filled.CallMissed
 import androidx.compose.material.icons.filled.CallReceived
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.chat.domain.model.CallLog
@@ -32,6 +36,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import kotlinx.coroutines.launch
 
 
 data class CallItemUi(
@@ -71,6 +76,10 @@ class CallsViewModel(private val repo: ChatRepository) : ViewModel() {
         }
         CallsUiState(items = items, isLoading = false)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CallsUiState())
+
+    fun deleteCall(callId: String) {
+        viewModelScope.launch { repo.deleteCall(callId) }
+    }
 
     companion object {
         fun factory(repo: ChatRepository) = viewModelFactory {
@@ -122,12 +131,45 @@ fun CallsPane(
                 Divider(Modifier.padding(bottom = 8.dp))
             }
             items(section.items, key = { it.id }) { item ->
-                CallRow(
-                    item = item,
-                    onClick = { nav.navigate(ChatRoutes.detail("chat_${item.contactId}")) }
+                val dismissState = rememberSwipeToDismissBoxState(
+                    confirmValueChange = { value ->
+                        if (value == SwipeToDismissBoxValue.EndToStart) {
+                            vm.deleteCall(item.id)
+                            true
+                        } else false
+                    }
                 )
+
+                SwipeToDismissBox(
+                    state = dismissState,
+                    enableDismissFromStartToEnd = false, // right-to-left only
+                    backgroundContent = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.errorContainer),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Spacer(Modifier.weight(1f))
+                            Icon(
+                                Icons.Filled.Delete,
+                                contentDescription = "Delete",
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(end = 24.dp)
+                            )
+                        }
+                    }
+                ) {
+                    CallRow(
+                        item = item,
+                        onClick = { nav.navigate(ChatRoutes.detail("chat_${item.contactId}")) }
+                    )
+                }
+
                 Spacer(Modifier.height(8.dp))
             }
+
         }
     }
 }

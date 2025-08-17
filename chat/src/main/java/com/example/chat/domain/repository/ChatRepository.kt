@@ -21,5 +21,10 @@ interface ChatRepository {
     suspend fun markRead(chatId: String)
 
 
+    suspend fun deleteChat(chatId: String)
+    suspend fun deleteContact(contactId: String)
+    suspend fun deleteCall(callId: String)
+
+
 
 }

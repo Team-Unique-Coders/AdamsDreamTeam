@@ -19,12 +19,13 @@ class FakeChatRepository : ChatRepository {
 
     private val contactsState = MutableStateFlow(
         listOf(
-            Contact("c1", "Rebecca Moore", emailOrPhone = "rebeccaca@gmail.com", isStarred = true),
-            Contact("c2", "Franz Ferdinand", emailOrPhone = "Ferdinandand@gmail.com"),
-            Contact("c3", "My buddyz", emailOrPhone = "0678564789"),
-            Contact("c4", "Burger delivery", emailOrPhone = "support@burger.com")
+            Contact("c1", "Rebecca Moore", "rebeccaca@gmail.com", isStarred = true),
+            Contact("c2", "Franz Ferdinand", "Ferdinandand@gmail.com"),
+            Contact("c3", "My buddyz", "0678564789"),
+            Contact("c4", "Burger delivery", "support@burger.com")
         )
     )
+
 
     private val chatsState = MutableStateFlow(
         listOf(
@@ -253,4 +254,24 @@ class FakeChatRepository : ChatRepository {
     }
 
     override fun calls() = callsState
+    override suspend fun deleteChat(chatId: String) {
+        chatsState.value = chatsState.value.filterNot { it.id == chatId }
+        messagesByChat.remove(chatId)
+    }
+
+    override suspend fun deleteContact(contactId: String) {
+        contactsState.value = contactsState.value.filterNot { it.id == contactId }
+
+        val possibleChatId = "chat_$contactId"
+        if (chatsState.value.any { it.id == possibleChatId }) {
+            deleteChat(possibleChatId)
+        }
+
+        callsState.value = callsState.value.filterNot { it.contactId == contactId }
+    }
+
+    override suspend fun deleteCall(callId: String) {
+        callsState.value = callsState.value.filterNot { it.id == callId }
+    }
+
 }
