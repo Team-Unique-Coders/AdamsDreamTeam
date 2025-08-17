@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.project.adamdreamteam.navigation.AppNavHost
 import com.project.adamdreamteam.ui.theme.AdamDreamTeamTheme
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
