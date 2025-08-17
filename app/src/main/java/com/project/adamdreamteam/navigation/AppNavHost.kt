@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
+import com.example.chat.entry.ChatEntry
 import com.project.adamdreamteam.ui.home.HomePage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,7 +36,17 @@ fun AppNavHost(
         composable(Routes.TINDER) { StubScreen("Tinder") }
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
         composable(Routes.LEARN) { StubScreen("Learn") }
-        composable(Routes.CHAT) { StubScreen("Chat") }
+        composable(Routes.CHAT) {
+            ChatEntry(
+                onClose = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
         composable(Routes.LAUNDRY) { StubScreen("Laundry") }
         composable(Routes.EAT) { StubScreen("Eat") }
