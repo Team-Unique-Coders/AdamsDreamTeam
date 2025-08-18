@@ -45,6 +45,7 @@ fun HomePage(onOpen: (String) -> Unit) {
         FeatureItem("Learn",    R.drawable.learn_icon,    Routes.LEARN),
         FeatureItem("Chat",     R.drawable.chat_icon,     Routes.CHAT),
         FeatureItem("Doctor",   R.drawable.doctor_icon,   Routes.DOCTOR),
+        // 🔑 THIS must point to Routes.LAUNDRY which equals "laundry_entry"
         FeatureItem("Laundry",  R.drawable.laundry_icon,  Routes.LAUNDRY),
         FeatureItem("Eat",      R.drawable.eat_icon,      Routes.EAT),
         FeatureItem("Hotel",    R.drawable.hotel_icon,    Routes.HOTEL),
@@ -54,7 +55,7 @@ fun HomePage(onOpen: (String) -> Unit) {
     )
     val featureByRoute = remember(featureItems) { featureItems.associateBy { it.route } }
 
-
+    // In-memory favorites (persist later with DataStore if you want)
     var favoriteRoutes by rememberSaveable { mutableStateOf(listOf<String>()) }
     val favorites: List<FeatureItem> = favoriteRoutes.mapNotNull { featureByRoute[it] }
 
@@ -67,13 +68,23 @@ fun HomePage(onOpen: (String) -> Unit) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 title = { Text("I Click I Pay") },
-                actions = { TextButton(onClick = { showLogoutDialog = true }) { Text("Logout") } }
+                actions = {
+                    TextButton(onClick = { showLogoutDialog = true }) {
+                        Text("Logout", color = MaterialTheme.colorScheme.onPrimary)
+                    }
+                }
             )
         }
     ) { inner ->
+
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3), // 🔒 exactly 3 columns
+            columns = GridCells.Fixed(3),
             modifier = Modifier
                 .padding(inner)
                 .fillMaxSize(),
@@ -81,15 +92,11 @@ fun HomePage(onOpen: (String) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
+            // Favorites section (full-width)
             if (favorites.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column(Modifier.fillMaxWidth()) {
-                        Text(
-                            "Favorite Apps",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        SectionHeader("Favorite Apps")
                         Spacer(Modifier.height(12.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             items(favorites, key = { it.route }) { fav ->
@@ -102,20 +109,15 @@ fun HomePage(onOpen: (String) -> Unit) {
                         }
                     }
                 }
-
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column {
                         Spacer(Modifier.height(8.dp))
-                        Text(
-                            "All Services",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        SectionHeader("All Services")
                     }
                 }
             }
 
-            // ---------- All services grid (3 columns) ----------
+            // All services grid
             items(featureItems, key = { it.route }) { feature ->
                 val isFav = favoriteRoutes.contains(feature.route)
                 FeatureTile(
@@ -129,7 +131,6 @@ fun HomePage(onOpen: (String) -> Unit) {
         }
     }
 
-
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
@@ -139,13 +140,24 @@ fun HomePage(onOpen: (String) -> Unit) {
                 TextButton(
                     onClick = {
                         showLogoutDialog = false
-                        // TODO: FirebaseAuth.getInstance().signOut() later
+                        // TODO: FirebaseAuth.getInstance().signOut()
                     }
                 ) { Text("Log out") }
             },
-            dismissButton = { TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") } }
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
+            }
         )
     }
+}
+
+@Composable
+private fun SectionHeader(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onBackground
+    )
 }
 
 @Composable
@@ -159,10 +171,10 @@ private fun FavoriteMiniTile(
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Box(
+        Column(
             modifier = Modifier
-                .width(110.dp)
-                .height(120.dp)
+                .width(128.dp)
+                .height(138.dp)
                 .border(
                     width = 2.dp,
                     brush = Brush.linearGradient(LocalBrand.current.gradient),
@@ -170,63 +182,52 @@ private fun FavoriteMiniTile(
                 )
                 .padding(8.dp)
         ) {
-            Column(Modifier.fillMaxSize()) {
-
-                // Top row: small heart, no overlap with icon
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 28.dp),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    IconButton(
-                        onClick = onUnfavorite,
-                        modifier = Modifier.size(28.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Favorite,
-                            contentDescription = "Remove from favorites",
-                            tint = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
-
-                // Center content (smaller plate)
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Card(
-                        shape = CircleShape,
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
-                            Image(
-                                painter = painterResource(item.iconRes),
-                                contentDescription = item.title,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = item.title,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp),
-                        textAlign = TextAlign.Center,
-                        maxLines = 2
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 28.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Top
+            ) {
+                IconButton(onClick = onUnfavorite, modifier = Modifier.size(26.dp)) {
+                    Icon(
+                        imageVector = Icons.Filled.Favorite,
+                        contentDescription = "Remove from favorites",
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
             }
+
+            Card(
+                shape = CircleShape,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = painterResource(item.iconRes),
+                        contentDescription = item.title,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            Text(
+                text = item.title,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp)
+            )
         }
     }
 }
-
 
 @Composable
 private fun FeatureTile(
@@ -240,14 +241,13 @@ private fun FeatureTile(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(148.dp),
+            .height(184.dp),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
-        // Gradient border around the whole card
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .border(
@@ -255,72 +255,66 @@ private fun FeatureTile(
                     brush = Brush.linearGradient(LocalBrand.current.gradient),
                     shape = MaterialTheme.shapes.large
                 )
-                .padding(12.dp) // inner padding
+                .padding(12.dp)
         ) {
-            Column(Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 36.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Top
+            ) {
+                IconButton(onClick = onToggleFavorite, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                        tint = if (isFavorite)
+                            MaterialTheme.colorScheme.secondary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
 
-                // Top row reserved for the heart (prevents overlap)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 36.dp),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.Top
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Card(
+                    shape = CircleShape,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    IconButton(
-                        onClick = onToggleFavorite,
-                        modifier = Modifier.size(36.dp) // compact, but still tappable
+                    Box(
+                        modifier = Modifier.size(92.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                            tint = if (isFavorite)
-                                MaterialTheme.colorScheme.secondary
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                        Image(
+                            painter = painterResource(iconRes),
+                            contentDescription = title,
+                            modifier = Modifier.size(56.dp)
                         )
                     }
                 }
 
-                // Centered content below the heart row
-                Column(
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = title,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 17.sp),
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    // Circular icon plate
-                    Card(
-                        shape = CircleShape,
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.size(76.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                painter = painterResource(iconRes),
-                                contentDescription = title,
-                                modifier = Modifier.size(44.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        text = title,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleSmall.copy(fontSize = 16.sp),
-                        textAlign = TextAlign.Center,
-                        maxLines = 2
-                    )
-                }
+                        .padding(horizontal = 6.dp)
+                )
             }
         }
     }
 }
-

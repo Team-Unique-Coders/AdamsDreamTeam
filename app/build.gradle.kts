@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
+
 }
 
 android {
@@ -43,6 +43,11 @@ android {
 dependencies {
 
     implementation(project(":bank"))
+    implementation(project(":laundry"))
+    implementation(project(":chat"))
+    implementation(project(":mechanic"))
+    implementation(project(":handyman"))
+
     implementation(project(":tinder"))
     implementation("io.coil-kt:coil-compose:2.6.0")
 
@@ -57,7 +62,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(project(":common_utils"))
-    implementation(libs.androidx.room.runtime.android)
+    implementation(project(":learn"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,8 +72,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.navigation.compose)
-    kapt("androidx.room:room-compiler:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-
+    implementation(libs.androidx.compose.material.icons.extended)
 
 }

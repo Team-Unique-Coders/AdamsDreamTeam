@@ -18,6 +18,8 @@ import androidx.room.Room
 import com.example.bank.BankScreen
 import com.example.tinder.nav.AppNavigation
 import com.example.tinder.ui.RainEffectController
+import com.example.laundry.navigation.LaundryFeatureEntry
+import com.example.laundry.navigation.addLaundryGraph
 import com.project.adamdreamteam.ui.home.HomePage
 import androidx.navigation.compose.rememberNavController
 import com.example.tinder.ui.LoopingMusicButton
@@ -33,6 +35,7 @@ fun AppNavHost(
         startDestination = Routes.HOME,
         modifier = modifier
     ) {
+        // Home hub
         composable(Routes.HOME) {
             HomePage(onOpen = { route -> navController.navigate(route) })
         }
@@ -52,11 +55,24 @@ fun AppNavHost(
         composable(Routes.LEARN) { StubScreen("Learn") }
         composable(Routes.CHAT) { StubScreen("Chat") }
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
-        composable(Routes.LAUNDRY) { StubScreen("Laundry") }
+        addLaundryGraph(
+            nav = navController,
+            onOpen = { route -> navController.navigate(route) }
+        )
+
+        // 2) Laundry ENTRY route (unique) -> redirects to nested graph, then pops itself
+        composable(Routes.LAUNDRY) {
+            LaundryFeatureEntry(
+                nav = navController,
+                popUpSelf = true,
+                selfRoute = Routes.LAUNDRY
+            )
+        }
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
         composable(Routes.HANDYMAN) { StubScreen("Handyman") }
         composable(Routes.MECHANIC) { StubScreen("Mechanic") }
+
 
         composable(Routes.BANK) {
             BankScreen(
