@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.bank.BankScreen
+import com.example.bank.entry.BankEntry
 import com.example.chat.entry.ChatEntry
 import com.example.mechanic.navigation.MechanicNavEntry
 import com.example.handyman.navigation.HandymanNavEntry
@@ -77,8 +77,8 @@ fun AppNavHost(
 
 
         composable(Routes.BANK) {
-            BankScreen(
-                onBackToHome = {
+            BankEntry(
+                onClose = {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.HOME) { inclusive = false }
                         launchSingleTop = true
@@ -86,6 +86,7 @@ fun AppNavHost(
                 }
             )
         }
+
     }
 }
 
