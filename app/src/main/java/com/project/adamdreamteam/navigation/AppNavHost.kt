@@ -54,7 +54,19 @@ fun AppNavHost(
         }
 
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
-        composable(Routes.LAUNDRY) { StubScreen("Laundry") }
+        addLaundryGraph(
+            nav = navController,
+            onOpen = { route -> navController.navigate(route) }
+        )
+
+        // 2) Laundry ENTRY route (unique) -> redirects to nested graph, then pops itself
+        composable(Routes.LAUNDRY) {
+            LaundryFeatureEntry(
+                nav = navController,
+                popUpSelf = true,
+                selfRoute = Routes.LAUNDRY
+            )
+        }
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
         composable(Routes.HANDYMAN) { HandymanNavEntry() }
