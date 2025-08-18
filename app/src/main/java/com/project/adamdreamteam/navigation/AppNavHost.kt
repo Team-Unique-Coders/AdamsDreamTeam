@@ -1,7 +1,5 @@
 package com.project.adamdreamteam.navigation
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,11 +13,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
-import com.example.laundry.navigation.LaundryFeatureEntry
-import com.example.laundry.navigation.addLaundryGraph
 import com.project.adamdreamteam.ui.home.HomePage
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
@@ -42,7 +37,7 @@ fun AppNavHost(
         composable(Routes.LEARN) { StubScreen("Learn") }
         composable(Routes.CHAT) { StubScreen("Chat") }
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
-
+        composable(Routes.LAUNDRY) { StubScreen("Laundry") }
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
         composable(Routes.HANDYMAN) { StubScreen("Handyman") }
@@ -57,22 +52,6 @@ fun AppNavHost(
                         launchSingleTop = true
                     }
                 }
-            )
-        }
-
-        // 1) Register the Laundry nested graph on THIS controller,
-        //    and pass onOpen so Laundry screens can navigate too.
-        addLaundryGraph(
-            nav = navController,
-            onOpen = { route -> navController.navigate(route) }
-        )
-
-        // 2) Laundry ENTRY route (unique): redirects into the nested graph and pops itself
-        composable(Routes.LAUNDRY) {
-            LaundryFeatureEntry(
-                nav = navController,
-                popUpSelf = true,
-                selfRoute = Routes.LAUNDRY
             )
         }
     }
