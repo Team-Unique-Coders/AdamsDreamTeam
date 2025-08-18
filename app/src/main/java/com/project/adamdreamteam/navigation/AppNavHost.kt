@@ -1,5 +1,7 @@
 package com.project.adamdreamteam.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,10 +15,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
+import com.example.chat.entry.ChatEntry
+import com.example.mechanic.navigation.MechanicNavEntry
+import com.example.handyman.navigation.HandymanNavEntry
 import com.example.laundry.navigation.LaundryFeatureEntry
 import com.example.laundry.navigation.addLaundryGraph
+import com.example.learn.navigation.LearnNavEntry
 import com.project.adamdreamteam.ui.home.HomePage
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
@@ -36,9 +43,19 @@ fun AppNavHost(
         composable(Routes.UBER) { StubScreen("Uber") }
         composable(Routes.TINDER) { StubScreen("Tinder") }
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
-        composable(Routes.LEARN) { StubScreen("Learn") }
-        composable(Routes.CHAT) { StubScreen("Chat") }
+        composable(Routes.LEARN) { LearnNavEntry() }
+        composable(Routes.CHAT) {
+            ChatEntry(
+                onClose = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
+
         addLaundryGraph(
             nav = navController,
             onOpen = { route -> navController.navigate(route) }
@@ -52,10 +69,11 @@ fun AppNavHost(
                 selfRoute = Routes.LAUNDRY
             )
         }
+
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
-        composable(Routes.HANDYMAN) { StubScreen("Handyman") }
-        composable(Routes.MECHANIC) { StubScreen("Mechanic") }
+        composable(Routes.HANDYMAN) { HandymanNavEntry() }
+        composable(Routes.MECHANIC) { MechanicNavEntry() }
 
 
         composable(Routes.BANK) {
