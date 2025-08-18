@@ -11,6 +11,12 @@ composeBom = "2024.09.00"
 androidx-navigation = "2.7.7"
 appcompat = "1.7.1"
 material = "1.12.0"
+hilt = "2.51.1"
+ksp = "2.0.21-1.0.25"
+coroutines = "1.9.0"
+lifecycle = "2.8.4"            # reuse for viewmodel
+coil = "2.7.0"
+osmdroid = "0.0.12"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,10 +36,33 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+# --- Add to [libraries] ---
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+kotlinx-coroutines-android      = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# Hilt
+hilt-android  = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
+
+# Compose extras used by your common utils
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+
+# Coil (CircularImageHolderUrl)
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+
+# OpenStreetMap (Map.kt)
+osmdroid-compose = { module = "com.github.utsmannn:osmandcompose", version.ref = "osmdroid" }
+
+
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+# --- Add to [plugins] ---
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+ksp  = { id = "com.google.devtools.ksp",       version.ref = "ksp" }
 
