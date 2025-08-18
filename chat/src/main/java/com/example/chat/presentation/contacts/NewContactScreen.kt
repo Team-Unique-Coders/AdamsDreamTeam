@@ -52,6 +52,7 @@ class NewContactViewModel(private val repo: ChatRepository) : ViewModel() {
 }
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewContactScreen(nav: NavController, vm: NewContactViewModel) {

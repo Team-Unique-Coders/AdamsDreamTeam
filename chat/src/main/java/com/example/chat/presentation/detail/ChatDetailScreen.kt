@@ -8,7 +8,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.outlined.AttachFile
+import androidx.compose.material.icons.outlined.Mood
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Send
+import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +29,7 @@ import androidx.navigation.NavController
 fun ChatDetailScreen(nav: NavController, vm: ChatDetailViewModel) {
     val state by vm.state.collectAsState()
 
+    // Auto-scroll to bottom when messages change
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
@@ -36,6 +44,20 @@ fun ChatDetailScreen(nav: NavController, vm: ChatDetailViewModel) {
                 navigationIcon = {
                     IconButton(onClick = { nav.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    // Video call
+                    IconButton(onClick = { /* TODO: start video call (stub) */ }) {
+                        Icon(Icons.Filled.Videocam, contentDescription = "Video call")
+                    }
+                    // Voice call
+                    IconButton(onClick = { /* TODO: start voice call (stub) */ }) {
+                        Icon(Icons.Filled.Call, contentDescription = "Call")
+                    }
+                    // Overflow/menu
+                    IconButton(onClick = { /* TODO: menu */ }) {
+                        Icon(Icons.Filled.MoreVert, contentDescription = "More")
                     }
                 }
             )
@@ -78,6 +100,7 @@ fun ChatDetailScreen(nav: NavController, vm: ChatDetailViewModel) {
                 }
             }
 
+            // "Typing…" indicator
             if (state.isPeerTyping) {
                 Row(
                     modifier = Modifier
@@ -95,27 +118,61 @@ fun ChatDetailScreen(nav: NavController, vm: ChatDetailViewModel) {
 
             Divider()
 
+            // Composer bar
+            // Composer bar
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(8.dp),
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Text field with emoji (left) + attach & camera (right) inside the field
                 OutlinedTextField(
                     value = state.input,
                     onValueChange = vm::onInputChange,
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Your message") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+                    placeholder = { Text("Message") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                    keyboardActions = KeyboardActions(onSend = { vm.send() })
+                    keyboardActions = KeyboardActions(onSend = {
+                        if (state.input.isNotBlank()) vm.send()
+                    }),
+                    leadingIcon = {
+                        IconButton(onClick = { /* TODO: emoji picker */ }) {
+                            Icon(Icons.Outlined.Mood, contentDescription = "Emoji")
+                        }
+                    },
+                    trailingIcon = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = { /* TODO: attach */ }) {
+                                Icon(Icons.Outlined.AttachFile, contentDescription = "Attach")
+                            }
+                            IconButton(onClick = { /* TODO: camera */ }) {
+                                Icon(Icons.Outlined.PhotoCamera, contentDescription = "Camera")
+                            }
+                        }
+                    }
                 )
-                Spacer(Modifier.width(8.dp))
-                FilledIconButton(
-                    onClick = vm::send,
-                    enabled = !state.isSending && state.input.isNotBlank()
-                ) {
-                    Icon(Icons.Outlined.Send, contentDescription = "Send")
+
+                // Right action: Mic when empty, Send when typing
+                val canSend = state.input.isNotBlank() && !state.isSending
+                if (canSend) {
+                    FilledIconButton(onClick = vm::send, enabled = true) {
+                        Icon(Icons.Outlined.Send, contentDescription = "Send")
+                    }
+                } else {
+                    FilledIconButton(
+                        onClick = {
+                            // Stub: send a fake voice message for now
+                            vm.onInputChange("🎤 Voice message")
+                            vm.send()
+                        },
+                        enabled = !state.isSending
+                    ) {
+                        Icon(Icons.Outlined.Mic, contentDescription = "Record")
+                    }
                 }
             }
         }
