@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(project(":common_utils"))
     implementation(project(":learn"))
+    implementation(project(":doctor"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
