@@ -1,13 +1,19 @@
 package com.example.laundry.navigation
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.example.laundry.components.MapsCompo
+import com.example.laundry.data.LaundryViewModel
+import com.example.laundry.data.providerKey
 import com.example.laundry.screens.FilterScreen
 import com.example.laundry.screens.LaundryHomeScreen
 import com.example.laundry.screens.LaundryMapScreen
@@ -26,7 +32,8 @@ object LaundryDestinations {
     const val LIST  = "laundry/list"   // start destination -> LaundryScreen
     const val HOME = "laundry/home"
     const val FILTER = "laundry/filter"
-    const val DETAILSCREEN = "laundry/details"
+    const val DETAILS = "laundry/details/{id}"
+    fun details(id: String) = "laundry/details/$id"
     const val MAPSCREEN = "laundry/maps"
     const val SCHEDULESCREEN = "laundry/schedule"
     const val YOURLAUNDRY = "laundry/your"
@@ -35,11 +42,20 @@ object LaundryDestinations {
 
 }
 
+@SuppressLint("UnrememberedGetBackStackEntry")
+@Composable
+fun graphViewModel(nav: NavHostController): LaundryViewModel {
+    // Scope the VM to the "laundry" graph so all its destinations share it
+    val graphEntry = remember(nav) { nav.getBackStackEntry(LaundryDestinations.GRAPH) }
+    return viewModel(graphEntry)
+}
+
 /**
  * Register the Laundry nested graph.
  * Accept an onOpen callback so Laundry screens can navigate:
  * onOpen = { route -> nav.navigate(route) }
  */
+@SuppressLint("StateFlowValueCalledInComposition")
 @RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.addLaundryGraph(
     nav: NavHostController,
@@ -53,13 +69,36 @@ fun NavGraphBuilder.addLaundryGraph(
             LaundryScreen(onOpen = onOpen)
         }
         composable(LaundryDestinations.HOME) {
-            LaundryHomeScreen(onOpen = onOpen, onBack = { nav.popBackStack() } )
+            val vm = graphViewModel(nav)
+            val providers = vm.providers.collectAsStateWithLifecycle().value
+            LaundryHomeScreen(
+                providers,
+                onOpen = onOpen, onBack = { nav.popBackStack() } )
+
         }
         composable(LaundryDestinations.FILTER) {
             FilterScreen(onOpen = onOpen, onBack = { nav.popBackStack() } )
         }
-        composable(LaundryDestinations.DETAILSCREEN) {
-            ProviderDetailScreen(onOpen = onOpen, onBack = { nav.popBackStack() } )
+        composable(
+            route = LaundryDestinations.DETAILS,
+            arguments = listOf(androidx.navigation.navArgument("id") {
+                type = androidx.navigation.NavType.StringType
+            })
+        ) { backStack ->
+            val vm = graphViewModel(nav)
+            val id = backStack.arguments?.getString("id") ?: return@composable
+            val provider = vm.providers.value.firstOrNull { providerKey(it) == id }
+
+            if (provider == null) {
+                // nothing to show — go back gracefully
+                androidx.compose.runtime.LaunchedEffect(Unit) { nav.popBackStack() }
+            } else {
+                ProviderDetailScreen(
+                    provider = provider,
+                    onBack = { nav.popBackStack() },
+                    onOpen = onOpen
+                )
+            }
         }
         composable(LaundryDestinations.MAPSCREEN) {
             LaundryMapScreen(onOpen = onOpen, onBack = { nav.popBackStack() } )
