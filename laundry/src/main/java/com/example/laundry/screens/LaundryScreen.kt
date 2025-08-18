@@ -59,10 +59,6 @@ fun LaundryScreen(
                     onClick = { onOpen(LaundryDestinations.HOME)  }, // example: navigate elsewhere in app
                     text = "Let's go"
                 )
-                OrangeButton(
-                    onClick = { onOpen(LaundryDestinations.HOME)  }, // example: navigate elsewhere in app
-                    text = "Let's go"
-                )
             }
         }
     }
