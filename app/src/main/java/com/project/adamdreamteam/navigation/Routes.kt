@@ -16,4 +16,5 @@ object Routes {
     const val HANDYMAN = "handyman"
     const val MECHANIC = "mechanic"
     const val BANK = "bank"
+
 }
