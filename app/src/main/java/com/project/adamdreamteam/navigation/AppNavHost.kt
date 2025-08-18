@@ -8,14 +8,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.room.Room
 import com.example.bank.BankScreen
+import com.example.tinder.nav.AppNavigation
+import com.example.tinder.ui.RainEffectController
 import com.example.laundry.navigation.LaundryFeatureEntry
 import com.example.laundry.navigation.addLaundryGraph
 import com.project.adamdreamteam.ui.home.HomePage
+import androidx.navigation.compose.rememberNavController
+import com.example.tinder.ui.LoopingMusicButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +41,16 @@ fun AppNavHost(
         }
 
         composable(Routes.UBER) { StubScreen("Uber") }
-        composable(Routes.TINDER) { StubScreen("Tinder") }
+
+        composable(Routes.TINDER) {
+            LoopingMusicButton()
+            val tinderNavController = rememberNavController()
+            AppNavigation(
+                navController = tinderNavController,
+                controller = RainEffectController()
+            )
+        }
+
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
         composable(Routes.LEARN) { StubScreen("Learn") }
         composable(Routes.CHAT) { StubScreen("Chat") }
