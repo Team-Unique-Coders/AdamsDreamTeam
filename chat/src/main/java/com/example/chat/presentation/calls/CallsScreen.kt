@@ -1,6 +1,9 @@
 package com.example.chat.presentation.calls
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +17,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,11 +36,15 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 
 data class CallItemUi(
@@ -121,7 +129,8 @@ fun CallsPane(
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         sections.forEach { section ->
-            item {
+            // SECTION HEADER (Today / Yesterday / dd MMMM yyyy)
+            item(key = "header_${section.header}") {
                 Text(
                     text = section.header,
                     style = MaterialTheme.typography.labelLarge,
@@ -130,48 +139,101 @@ fun CallsPane(
                 )
                 Divider(Modifier.padding(bottom = 8.dp))
             }
-            items(section.items, key = { it.id }) { item ->
-                val dismissState = rememberSwipeToDismissBoxState(
-                    confirmValueChange = { value ->
-                        if (value == SwipeToDismissBoxValue.EndToStart) {
-                            vm.deleteCall(item.id)
-                            true
-                        } else false
-                    }
-                )
 
-                SwipeToDismissBox(
-                    state = dismissState,
-                    enableDismissFromStartToEnd = false, // right-to-left only
-                    backgroundContent = {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.errorContainer),
-                            verticalAlignment = Alignment.CenterVertically
+            // SECTION ROWS (keeps your half-reveal + confirm delete)
+            items(section.items, key = { it.id }) { item ->
+                val scope = rememberCoroutineScope()
+                val density = LocalDensity.current
+                val revealWidth = 88.dp
+                val revealPx = with(density) { revealWidth.toPx() }
+                val cardShape = MaterialTheme.shapes.medium
+                var showConfirm by rememberSaveable { mutableStateOf(false) }
+                val offsetX = remember { Animatable(0f) }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerInput(revealPx) {
+                            detectHorizontalDragGestures(
+                                onHorizontalDrag = { _, dragAmount ->
+                                    val new = (offsetX.value + dragAmount).coerceIn(-revealPx, 0f)
+                                    scope.launch { offsetX.snapTo(new) }
+                                },
+                                onDragEnd = {
+                                    val target = if (offsetX.value <= -revealPx / 2f) -revealPx else 0f
+                                    scope.launch { offsetX.animateTo(target, tween(180)) }
+                                },
+                                onDragCancel = {
+                                    scope.launch { offsetX.animateTo(0f, tween(180)) }
+                                }
+                            )
+                        }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(cardShape)
+                            .background(Color(0xFFFF7A00)),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Spacer(Modifier.weight(1f))
+                        IconButton(
+                            onClick = { showConfirm = true },
+                            modifier = Modifier.padding(end = 16.dp)
                         ) {
-                            Spacer(Modifier.weight(1f))
                             Icon(
                                 Icons.Filled.Delete,
                                 contentDescription = "Delete",
-                                tint = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(end = 24.dp)
+                                tint = Color.White
                             )
                         }
                     }
-                ) {
-                    CallRow(
-                        item = item,
-                        onClick = { nav.navigate(ChatRoutes.detail("chat_${item.contactId}")) }
+
+                    Box(
+                        modifier = Modifier.offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                    ) {
+                        CallRow(
+                            item = item,
+                            onClick = {
+                                scope.launch { offsetX.animateTo(0f, tween(160)) }
+                                nav.navigate(ChatRoutes.detail("chat_${item.contactId}"))
+                            }
+                        )
+                    }
+                }
+
+                if (showConfirm) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showConfirm = false
+                            scope.launch { offsetX.animateTo(0f, tween(160)) }
+                        },
+                        title = { Text("Delete call?") },
+                        text = { Text("This will remove the call log entry. This can’t be undone.") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showConfirm = false
+                                    vm.deleteCall(item.id)
+                                }
+                            ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    showConfirm = false
+                                    scope.launch { offsetX.animateTo(0f, tween(160)) }
+                                }
+                            ) { Text("Cancel") }
+                        }
                     )
                 }
 
                 Spacer(Modifier.height(8.dp))
             }
-
         }
     }
+
 }
 
 @Composable

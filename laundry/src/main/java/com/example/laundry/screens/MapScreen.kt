@@ -1,8 +1,11 @@
 package com.example.laundry.screens
 
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -13,6 +16,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,16 +26,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
-import com.example.laundry.components.MapsCompo
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.example.laundry.data.Provider
 import com.example.laundry.data.fake
+import com.example.laundry.data.providerKey
 import com.example.laundry.navigation.LaundryDestinations
 import com.project.common_utils.R
 import com.project.common_utils.components.CircularImageHolderDrawable
+import com.project.common_utils.components.CircularImageHolderUrl
+import com.project.common_utils.components.MapComponent
 import com.utsman.osmandcompose.CameraState
 import com.utsman.osmandcompose.Marker
 import com.utsman.osmandcompose.OpenStreetMap
@@ -54,16 +65,31 @@ fun LaundryMapScreen(
 
     Box(Modifier.fillMaxSize()) {
         // Map with provider markers
-        MapsCompo(
+        MapComponent(
             latitude = center.latitude,
             longitude = center.longitude,
-            zoom = 14.0
+            zoom = 14.0,
+            isShowButton = true
         ) {
             providers.forEach { p ->
+                    val state = rememberMarkerState(geoPoint = GeoPoint(p.lat, p.lon))
                 Marker(
-                    state = rememberMarkerState(geoPoint = GeoPoint(p.lat, p.lon)),
-                    onClick = { onProviderClick(p); true }
-                )
+                    state = state,
+                    onClick = { onProviderClick(p); true },
+                ) {
+                    AsyncImage(
+                        model = p.photoUrl,
+                        contentDescription = p.name,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .clickable {
+                                onOpen(LaundryDestinations.details(providerKey(p)))
+                            }
+                            .border(2.dp, Color.White, CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
         }
 
@@ -74,11 +100,23 @@ fun LaundryMapScreen(
                 .padding(16.dp)
         ) {
             Spacer(Modifier.height(16.dp))
-            SmallFloatingActionButton(
-                onClick = { /* open filters */ },
-                containerColor = Color.White
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
             ) {
-                Icon(Icons.Outlined.Menu, contentDescription = "Filter", tint = Color(0xFFFF8800))
+                SmallFloatingActionButton(
+                    onClick = onBack,
+                    containerColor = Color.White,
+                    modifier = Modifier.padding(12.dp)
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFFFF8800))
+                }
+                SmallFloatingActionButton(
+                    onClick = { /* open filters */ },
+                    containerColor = Color.White
+                ) {
+                    Icon(Icons.Outlined.Menu, contentDescription = "Filter", tint = Color(0xFFFF8800))
+                }
             }
             Spacer(Modifier.height(8.dp))
             TextField(
@@ -92,6 +130,8 @@ fun LaundryMapScreen(
             Spacer(Modifier.height(8.dp))
 
         }
+
+
 
         // Locate me
         FloatingActionButton(
@@ -134,13 +174,10 @@ private fun ProviderRow(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .width(300.dp)
-                    .clickable { onOpen(LaundryDestinations.DETAILSCREEN)}
+                    .clickable { onOpen(LaundryDestinations.details(providerKey(p)))}
             ) {
                 Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    CircularImageHolderDrawable(
-                        R.drawable.profiled,
-                        "holder"
-                    )
+                    CircularImageHolderUrl(p.photoUrl,"url")
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(p.name, fontWeight = FontWeight.SemiBold)
