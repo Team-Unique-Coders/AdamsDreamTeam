@@ -43,11 +43,13 @@ dependencies {
 
     implementation(project(":bank"))
     implementation(project(":chat"))
-    implementation(project(":handyman"))
     implementation(project(":learn"))
     implementation(project(":common_utils"))
     implementation(project(":laundry"))
     implementation(project(":mechanic"))
+    implementation(project(":handyman"))
+
+    implementation(project(":tinder"))
     implementation("io.coil-kt:coil-compose:2.6.0")
 
 
@@ -60,7 +62,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(project(":common_utils"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

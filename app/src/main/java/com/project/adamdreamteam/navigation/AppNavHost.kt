@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.tinder.nav.AppNavigation
+import com.example.tinder.ui.RainEffectController
 import com.example.bank.entry.BankEntry
 import com.example.chat.entry.ChatEntry
 import com.example.mechanic.navigation.MechanicNavEntry
@@ -22,6 +24,8 @@ import com.example.laundry.navigation.LaundryFeatureEntry
 import com.example.laundry.navigation.addLaundryGraph
 import com.example.learn.navigation.LearnNavEntry
 import com.project.adamdreamteam.ui.home.HomePage
+import androidx.navigation.compose.rememberNavController
+import com.example.tinder.ui.LoopingMusicButton
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +45,16 @@ fun AppNavHost(
         }
 
         composable(Routes.UBER) { StubScreen("Uber") }
-        composable(Routes.TINDER) { StubScreen("Tinder") }
+
+        composable(Routes.TINDER) {
+            LoopingMusicButton()
+            val tinderNavController = rememberNavController()
+            AppNavigation(
+                navController = tinderNavController,
+                controller = RainEffectController()
+            )
+        }
+
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
         composable(Routes.LEARN) { LearnNavEntry() }
         composable(Routes.CHAT) {
