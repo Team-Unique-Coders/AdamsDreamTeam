@@ -48,6 +48,7 @@ dependencies {
     implementation(project(":mechanic"))
     implementation(project(":handyman"))
 
+    implementation(project(":tinder"))
     implementation("io.coil-kt:coil-compose:2.6.0")
 
 
