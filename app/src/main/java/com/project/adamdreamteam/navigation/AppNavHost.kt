@@ -13,12 +13,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
-import com.example.chat.entry.ChatEntry
-import com.example.handyman.navigation.HandymanNavEntry
+import com.example.laundry.navigation.LaundryFeatureEntry
+import com.example.laundry.navigation.addLaundryGraph
 import com.project.adamdreamteam.ui.home.HomePage
-import com.example.learn.navigation.LearnNavEntry
-import com.example.mechanic.navigation.MechanicNavEntry
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,20 +36,8 @@ fun AppNavHost(
         composable(Routes.UBER) { StubScreen("Uber") }
         composable(Routes.TINDER) { StubScreen("Tinder") }
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
-        composable(Routes.LEARN) {
-            LearnNavEntry()
-        }
-        composable(Routes.CHAT) {
-            ChatEntry(
-                onClose = {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.HOME) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                }
-            )
-        }
-
+        composable(Routes.LEARN) { StubScreen("Learn") }
+        composable(Routes.CHAT) { StubScreen("Chat") }
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
         addLaundryGraph(
             nav = navController,
@@ -69,8 +54,8 @@ fun AppNavHost(
         }
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
-        composable(Routes.HANDYMAN) { HandymanNavEntry() }
-        composable(Routes.MECHANIC) { MechanicNavEntry() }
+        composable(Routes.HANDYMAN) { StubScreen("Handyman") }
+        composable(Routes.MECHANIC) { StubScreen("Mechanic") }
 
 
         composable(Routes.BANK) {
