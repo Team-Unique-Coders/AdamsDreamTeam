@@ -61,6 +61,8 @@ class GroupCreateViewModel(private val repo: ChatRepository) : ViewModel() {
 @Composable
 fun GroupCreateScreen(nav: NavController, vm: GroupCreateViewModel) {
     val state by vm.state.collectAsState()
+    val minMembers = 3
+
 
     // search state
     var showSearch by remember { mutableStateOf(false) }
@@ -93,7 +95,7 @@ fun GroupCreateScreen(nav: NavController, vm: GroupCreateViewModel) {
             )
         },
         floatingActionButton = {
-            if (state.selectedIds.size >= 2) {
+            if (state.selectedIds.size >= minMembers) {
                 FloatingActionButton(
                     onClick = {
                         val members = state.selectedIds.toList().toTypedArray()
@@ -118,6 +120,15 @@ fun GroupCreateScreen(nav: NavController, vm: GroupCreateViewModel) {
                         .joinToString(", ") { it.name }
                     Text("Participants: $names")
                 }
+            }
+
+            if (state.selectedIds.size < minMembers) {
+                Text(
+                    text = "Select at least $minMembers people to create a group.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
 
             // Search box (toggleable)

@@ -121,7 +121,8 @@ class GroupTopicViewModel(
 fun GroupTopicScreen(nav: NavController, vm: GroupTopicViewModel) {
     val state by vm.state.collectAsState()
     val scope = rememberCoroutineScope()
-    val canConfirm = state.title.isNotBlank() && state.members.isNotEmpty() && !state.isSaving
+    val minMembers = 3
+    val canConfirm = state.title.isNotBlank() && state.members.size >= minMembers && !state.isSaving
 
     var showSearch by remember { mutableStateOf(false) }
 
@@ -235,9 +236,18 @@ fun GroupTopicScreen(nav: NavController, vm: GroupTopicViewModel) {
             Spacer(Modifier.height(16.dp))
 
             Text(
-                text = "Participants : ${state.memberContacts.size}",
+                text = "Participants : ${state.memberContacts.size} (min $minMembers)",
                 style = MaterialTheme.typography.labelLarge
             )
+            if (state.memberContacts.size < minMembers) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Select at least $minMembers people to create a group.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
 
             Spacer(Modifier.height(12.dp))
 
