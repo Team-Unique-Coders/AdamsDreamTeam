@@ -15,10 +15,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.round
+import com.project.common_utils.R
 
 @Composable
 fun ReviewStars(
@@ -28,7 +30,7 @@ fun ReviewStars(
     stars: Int = 5,
     allowHalf: Boolean = true,
     size: Dp = 24.dp,
-    activeColor: Color = Color(0xFFFF9800),
+    activeColor: Color = colorResource(R.color.orange),
     inactiveColor: Color = Color(0xFFD6D6D6),
     spacing: Dp = 8.dp
 ) {
