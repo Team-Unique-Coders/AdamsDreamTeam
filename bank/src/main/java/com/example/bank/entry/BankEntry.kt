@@ -14,6 +14,7 @@ fun BankEntry(onClose: (() -> Unit)? = null) {
         navController = nav,
         startDestination = BankRoutes.ROOT
     ) {
-        bankGraph(navController = nav)
+        bankGraph(navController = nav, onClose = onClose)
+
     }
 }

@@ -18,24 +18,21 @@ import com.project.common_utils.components.OrangeButton
 @Composable
 fun BankIntroScreen(
     onContinue: () -> Unit,
-    onExploreDemo: () -> Unit,                 // not shown on UI now, kept for later
-    onBack: (() -> Unit)? = null,              // back arrow like your mock
-    @DrawableRes illustrationRes: Int? = null, // pass a drawable when you have it
+    onExploreDemo: () -> Unit,
+    onClose: (() -> Unit)? = null,
+    @DrawableRes illustrationRes: Int = com.example.bank.R.drawable.bankintro
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {},
+                title = { Text("Bank") },            // ← show title in the toolbar
                 navigationIcon = {
-                    if (onBack != null) {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
+                    if (onClose != null) {
+                        IconButton(onClick = onClose) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
                     }
-                }
+                },
             )
         }
     ) { inner ->
@@ -48,21 +45,17 @@ fun BankIntroScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // Illustration (optional for now)
-            if (illustrationRes != null) {
-                Image(
-                    painter = painterResource(illustrationRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 160.dp, max = 240.dp)
-                        .padding(top = 8.dp, bottom = 24.dp)
-                )
-            } else {
-                Spacer(Modifier.height(180.dp)) // placeholder space to match layout
-            }
+            Image(
+                painter = painterResource(illustrationRes),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(320.dp)
+                    .padding(top = 8.dp, bottom = 24.dp)
+            )
 
-            // Title + body
+            Spacer(Modifier.height(20.dp))
+
             Text(
                 text = "Bank",
                 style = MaterialTheme.typography.headlineLarge,
@@ -79,11 +72,7 @@ fun BankIntroScreen(
 
             Spacer(Modifier.weight(1f))
 
-
-            OrangeButton(
-                onClick = onContinue,
-                text = "Let’go"
-            )
+            OrangeButton(onClick = onContinue, text = "Let’go")
             Spacer(Modifier.height(24.dp))
         }
     }
