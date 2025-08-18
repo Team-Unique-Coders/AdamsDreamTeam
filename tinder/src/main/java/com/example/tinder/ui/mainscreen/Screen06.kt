@@ -44,14 +44,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tinder.R
-import com.example.tinder.room.UserDao
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.toMutableStateList
 import com.example.tinder.data.DummyDataSource
 import com.example.tinder.data.DummyUserFull
-import com.example.tinder.room.UserProfileEntity
 import com.example.tinder.ui.AnimatedInfoCard
 import com.example.tinder.ui.InfoCardContent
 import com.example.tinder.ui.RainEffectController

@@ -6,7 +6,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.tinder.room.UserDao
 import com.example.tinder.ui.AddProfilePicture
 import com.example.tinder.ui.EnableGeolocation
 import com.example.tinder.ui.ProfileFullScreen

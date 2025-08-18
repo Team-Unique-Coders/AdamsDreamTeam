@@ -41,7 +41,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.tinder.room.UserDao
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.RectangleShape
@@ -52,7 +51,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.tinder.R
 import com.example.tinder.data.DummyDataSource
 import com.example.tinder.data.DummyUserFull
-import com.example.tinder.room.UserProfileEntity
 import java.util.Calendar
 
 
