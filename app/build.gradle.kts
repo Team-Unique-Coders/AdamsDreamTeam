@@ -42,8 +42,12 @@ android {
 dependencies {
 
     implementation(project(":bank"))
+    implementation(project(":chat"))
+    implementation(project(":handyman"))
+    implementation(project(":learn"))
     implementation(project(":common_utils"))
     implementation(project(":laundry"))
+    implementation(project(":mechanic"))
     implementation("io.coil-kt:coil-compose:2.6.0")
 
 
