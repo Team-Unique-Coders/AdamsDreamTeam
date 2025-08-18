@@ -12,7 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import com.project.common_utils.R
 
 @Composable
 fun RangeSliderComponent(
@@ -32,8 +34,8 @@ fun RangeSliderComponent(
             valueRange = valueRange,
             steps = steps,
             colors = SliderDefaults.colors(
-                thumbColor = Color(0xFFFF9800),
-                activeTrackColor = Color(0xFFFF9800)
+                thumbColor = colorResource(R.color.orange),
+                activeTrackColor = colorResource(R.color.orange)
             )
         )
 
