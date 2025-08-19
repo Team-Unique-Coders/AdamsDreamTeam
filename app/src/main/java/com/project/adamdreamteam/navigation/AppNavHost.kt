@@ -64,7 +64,14 @@ fun AppNavHost(
         }
 
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
-        composable(Routes.LEARN) { LearnNavEntry() }
+        composable(Routes.LEARN) {
+            LearnNavEntry(onClose = {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.HOME) { inclusive = false }
+                    launchSingleTop = true
+                }
+            })
+        }
         composable(Routes.CHAT) {
             ChatEntry(
                 onClose = {
