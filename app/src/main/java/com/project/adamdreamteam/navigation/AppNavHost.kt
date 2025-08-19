@@ -27,6 +27,7 @@ import com.example.chat.entry.ChatEntry
 import com.example.handyman.navigation.HandymanNavEntry
 import com.example.learn.navigation.LearnNavEntry
 import com.example.mechanic.navigation.MechanicNavEntry
+import com.example.doctor.navigation.DoctorEntry
 
 import com.project.adamdreamteam.R as AppR
 
@@ -39,7 +40,7 @@ import com.example.tinder.ui.LoopingMusicButton
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
@@ -74,7 +75,8 @@ fun AppNavHost(
                 }
             )
         }
-        composable(Routes.DOCTOR) { StubScreen("Doctor") }
+
+        composable(Routes.DOCTOR) { DoctorEntry()}
         addLaundryGraph(
             nav = navController,
             onOpen = { route -> navController.navigate(route) }
