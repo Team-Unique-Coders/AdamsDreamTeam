@@ -21,10 +21,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,14 +46,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import coil.compose.rememberAsyncImagePainter
 import com.example.tinder.R
+import com.example.tinder.data.DummyAdamUser
 import com.example.tinder.data.DummyDataSource
 import com.example.tinder.data.DummyUserFull
+import com.example.tinder.data.PhotoSource
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 
@@ -59,153 +67,128 @@ fun CompleteProfile(
     onGeolocation: () -> Unit,
     onProfileComplete: () -> Unit
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    var name by rememberSaveable { mutableStateOf("") }
+    var age by rememberSaveable { mutableStateOf("") }
+    var city by rememberSaveable { mutableStateOf("") }
+    var aboutMe by rememberSaveable { mutableStateOf("") }
+    var photoUris by rememberSaveable { mutableStateOf(listOf<String>()) }
 
-    var topText by remember { mutableStateOf("") }        // Name / Description
-    var middleText by remember { mutableStateOf("") }     // City
-    var bottomText by remember { mutableStateOf("") }     // Date of birth, format YYYYMMDD
-
-    val selectedImages = remember { mutableStateListOf<Uri?>(null, null, null) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        val index = selectedImages.indexOfFirst { it == null }
-        if (index != -1) selectedImages[index] = uri
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null && photoUris.size < 3) {
+            photoUris = photoUris + uri.toString()
+        }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Text fields
         OutlinedTextField(
-            value = topText,
-            onValueChange = { topText = it },
-            label = { Text("Name / About Me") },
-            modifier = Modifier.fillMaxWidth().weight(0.2f),
-            shape = RoundedCornerShape(12.dp)
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Name") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
-        Spacer(modifier = Modifier.height(16.dp))
+
         OutlinedTextField(
-            value = middleText,
-            onValueChange = { middleText = it },
+            value = age,
+            onValueChange = { age = it },
+            label = { Text("Age") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+        )
+
+        OutlinedTextField(
+            value = city,
+            onValueChange = { city = it },
             label = { Text("City") },
-            modifier = Modifier.fillMaxWidth().weight(0.1f),
-            shape = RoundedCornerShape(12.dp)
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
-        Spacer(modifier = Modifier.height(16.dp))
+
         OutlinedTextField(
-            value = bottomText,
-            onValueChange = { bottomText = it },
-            label = { Text("Date of Birth (YYYYMMDD)") },
-            modifier = Modifier.fillMaxWidth(0.5f).weight(0.1f),
-            shape = RoundedCornerShape(12.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            value = aboutMe,
+            onValueChange = { aboutMe = it },
+            label = { Text("About Me") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+            maxLines = 5
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "Upload your photos",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            modifier = Modifier.align(Alignment.Start)
+        )
 
-        // Photo upload
-        val photoUri = selectedImages.firstOrNull()
-
-        Card(
-            modifier = Modifier
-                .width(80.dp)
-                .height(150.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .clickable { launcher.launch("image/*") },
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(4.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (photoUri != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(photoUri),
-                    contentDescription = "Selected Photo",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
+            photoUris.forEachIndexed { index, uri ->
                 Box(
-                    modifier = Modifier.fillMaxSize().background(Color.LightGray),
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.LightGray)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(Uri.parse(uri)),
+                        contentDescription = "Selected photo $index",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+            if (photoUris.size < 3) {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Gray)
+                        .clickable { launcher.launch("image/*") },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("+", fontSize = 24.sp, color = Color.White)
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Photo",
+                        tint = Color.White
+                    )
                 }
             }
         }
-
-
 
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = {
-                if (topText.isBlank() || middleText.isBlank() || bottomText.isBlank()) {
-                    Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-
-                // Parse date of birth
-                val dobInt = bottomText.toIntOrNull()
-                val age = if (dobInt != null) calculateAge(dobInt) else 25
-
-                val photoRes = selectedImages.firstOrNull()?.let { R.drawable.adam } ?: R.drawable.adam // placeholder
-
-                val newUser = DummyUserFull(
+                val user = DummyAdamUser.createUser(
                     id = 1,
-                    name = topText,
-                    age = age,
-                    city = middleText,
-                    photo = photoRes,
-                    aboutMe = topText,
-                    description = "Just a funny description for $topText",
-                    dateOfBirth = dobInt ?: 20000101,
-                    createdTime = System.currentTimeMillis().toString(),
-                    boosts = 0,
-                    likes = 0,
-                    superLikes = 0
+                    name = name,
+                    age = age.toIntOrNull() ?: 0,
+                    city = city,
+                    photoRes = R.drawable.adam23,
+                    bottomText = "1999",
+                    photoUris = photoUris.map { PhotoSource.UriString(it) }
                 )
-
-                val index = DummyDataSource.dummyUsersFull.indexOfFirst { it.id == 1 }
-                if (index != -1) {
-                    DummyDataSource.dummyUsersFull[index] = newUser
-                } else {
-                    DummyDataSource.dummyUsersFull.add(newUser)
-                }
-
-                onGeolocation()
+                DummyAdamUser.saveOrUpdateUser(user)
                 onProfileComplete()
             },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape = RoundedCornerShape(12.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Next", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("Complete Profile")
         }
     }
 }
 
-fun calculateAge(dob: Int): Int {
-    val dobStr = dob.toString()
-    if (dobStr.length != 8) return 0
-    val year = dobStr.substring(0, 4).toInt()
-    val month = dobStr.substring(4, 6).toInt() - 1
-    val day = dobStr.substring(6, 8).toInt()
-
-    val dobCalendar = Calendar.getInstance().apply { set(year, month, day) }
-    val today = Calendar.getInstance()
-    var age = today.get(Calendar.YEAR) - dobCalendar.get(Calendar.YEAR)
-    if (today.get(Calendar.MONTH) < dobCalendar.get(Calendar.MONTH) ||
-        (today.get(Calendar.MONTH) == dobCalendar.get(Calendar.MONTH) &&
-                today.get(Calendar.DAY_OF_MONTH) < dobCalendar.get(Calendar.DAY_OF_MONTH))
-    ) {
-        age--
-    }
-    return age
-}
 
 
 

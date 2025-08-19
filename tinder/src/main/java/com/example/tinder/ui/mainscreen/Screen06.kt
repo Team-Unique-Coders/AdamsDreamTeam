@@ -1,8 +1,12 @@
 package com.example.tinder.ui.mainscreen
 
 import android.util.Log
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -23,10 +27,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,14 +50,23 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import com.example.tinder.data.DummyAdamUser
 import com.example.tinder.data.DummyDataSource
 import com.example.tinder.data.DummyUserFull
-import com.example.tinder.ui.AnimatedInfoCard
-import com.example.tinder.ui.InfoCardContent
-import com.example.tinder.ui.RainEffectController
-import com.example.tinder.ui.RainEffectOverlay
-import kotlinx.coroutines.flow.map
-
+import com.example.tinder.data.PhotoSource
+import com.example.tinder.nav.navigateToProfileFull
+import com.example.tinder.ui.animation.AnimatedInfoCard
+import com.example.tinder.ui.animation.InfoCardContent
+import com.example.tinder.ui.animation.RainEffectController
+import com.example.tinder.ui.animation.RainEffectOverlay
+import kotlinx.coroutines.delay
+import kotlin.math.log
 
 
 @Composable
@@ -66,15 +77,23 @@ fun ProfileDetailScreen(
 ) {
     val scope = rememberCoroutineScope()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-
-    // Use mutableStateList so removing users triggers recomposition
     val allUsers = remember { DummyDataSource.dummyUsersFull.toMutableStateList() }
     var currentIndex by remember { mutableStateOf(0) }
     val offsetX = remember { Animatable(0f) }
     var selectedContent by remember { mutableStateOf<InfoCardContent?>(null) }
-
     val clickedPerProfile = remember { mutableStateMapOf<Int, MutableSet<Int>>() }
     var lastBoostClickTime by remember { mutableStateOf(0L) }
+    var activeGlow by remember { mutableStateOf<GlowType?>(null) }
+
+    val glowColor by animateColorAsState(
+        targetValue = when (activeGlow) {
+            GlowType.BOOST -> Color(0xFFFF9800)
+            GlowType.LIKE -> Color(0xFF4CAF50)
+            GlowType.SUPERLIKE -> Color(0xFFFFEB3B)
+            else -> Color.Transparent
+        },
+        label = "GlowAnim"
+    )
 
     val iconToContent = mapOf(
         R.drawable.happyadam to InfoCardContent(
@@ -108,8 +127,7 @@ fun ProfileDetailScreen(
     val nextUser = allUsers.getOrNull(currentIndex + 1)
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        // Next card slightly scaled
-        nextUser?.let {
+        nextUser?.let { user ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -118,19 +136,33 @@ fun ProfileDetailScreen(
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
-                ProfileCardContent(user = it) {
-                    navController.navigate("profileFull/${it.photo}/${it.name}/${it.age}/${it.city}")
+                ProfileCardContent(user = user) {
+                    val firstPhoto = user.photoUris.firstOrNull()
+                    if (firstPhoto != null) {
+                        when (firstPhoto) {
+                            is PhotoSource.DrawableRes -> {
+                                navController.navigateToProfileFull(userId = user.id)
+                            }
+                            is PhotoSource.UriString -> {
+                                navController.navigateToProfileFull(userId = user.id)
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        // Current card
         currentUser?.let { user ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.65f)
                     .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                    .border(
+                        width = if (activeGlow != null) 4.dp else 0.dp,
+                        color = glowColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDrag = { change, dragAmount ->
@@ -152,12 +184,21 @@ fun ProfileDetailScreen(
                 elevation = CardDefaults.cardElevation(8.dp)
             ) {
                 ProfileCardContent(user = user) {
-                    navController.navigate("profileFull/${user.photo}/${user.name}/${user.age}/${user.city}")
+                    val firstPhoto = user.photoUris.firstOrNull()
+                    if (firstPhoto != null) {
+                        when (firstPhoto) {
+                            is PhotoSource.DrawableRes -> {
+                                navController.navigateToProfileFull(userId = user.id)
+                            }
+                            is PhotoSource.UriString -> {
+                                navController.navigateToProfileFull(userId = user.id)
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        // Bottom icons
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -174,54 +215,86 @@ fun ProfileDetailScreen(
             )
 
             icons.forEach { iconRes ->
+                val isGlowing = when {
+                    activeGlow == GlowType.BOOST && iconRes == R.drawable.adamboost -> true
+                    activeGlow == GlowType.LIKE && iconRes == R.drawable.happyadam -> true
+                    activeGlow == GlowType.SUPERLIKE && iconRes == R.drawable.love -> true
+                    else -> false
+                }
+
                 Card(
                     shape = CircleShape,
                     elevation = CardDefaults.cardElevation(4.dp),
                     modifier = Modifier
                         .size(50.dp)
+                        .border(
+                            width = if (isGlowing) 3.dp else 0.dp,
+                            color = glowColor,
+                            shape = CircleShape
+                        )
                         .clickable {
-                            currentUser?.let { user ->
-                                val clickedIcons = clickedPerProfile.getOrPut(user.id) { mutableSetOf() }
+                            val adam = DummyAdamUser.dummyUsersFull.firstOrNull { it.id == 1 }
+                            val clickedIcons = clickedPerProfile.getOrPut(currentUser?.id ?: -1) { mutableSetOf() }
 
-                                when (iconRes) {
-                                    R.drawable.returnemote -> {
-                                        onNext()
+                            when (iconRes) {
+                                R.drawable.returnemote -> onNext()
+                                R.drawable.sadadam -> {
+                                    allUsers.removeAt(currentIndex)
+                                    if (currentIndex >= allUsers.size) {
+                                        currentIndex = allUsers.size - 1
                                     }
-                                    R.drawable.sadadam -> {
-                                        // Remove user from the list
-                                        allUsers.removeAt(currentIndex)
-                                        if (currentIndex >= allUsers.size) {
-                                            currentIndex = allUsers.size - 1
-                                        }
-                                    }
-                                    R.drawable.happyadam -> {
-                                        if (user.likes <= 0 || clickedIcons.contains(iconRes)) {
+                                }
+                                R.drawable.happyadam -> {
+                                    adam?.let {
+                                        if (it.likes < 1) {
                                             selectedContent = iconToContent[iconRes]
                                             return@clickable
                                         }
+                                        DummyAdamUser.updateUserStat("likes", -1)
                                         clickedIcons.add(iconRes)
                                         controller.startRainWithIcon(iconRes)
-                                        selectedContent = iconToContent[iconRes]
+                                        scope.launch {
+                                            activeGlow = GlowType.LIKE
+                                            delay(800)
+                                            activeGlow = null
+                                        }
+                                        selectedContent = null
                                     }
-                                    R.drawable.love -> {
-                                        if (user.superLikes <= 0 || clickedIcons.contains(iconRes)) {
+                                }
+                                R.drawable.love -> {
+                                    adam?.let {
+                                        if (it.superLikes < 1) {
                                             selectedContent = iconToContent[iconRes]
                                             return@clickable
                                         }
+                                        DummyAdamUser.updateUserStat("superLikes", -1)
                                         clickedIcons.add(iconRes)
                                         controller.startRainWithIcon(iconRes)
-                                        selectedContent = iconToContent[iconRes]
+                                        scope.launch {
+                                            activeGlow = GlowType.SUPERLIKE
+                                            delay(800)
+                                            activeGlow = null
+                                        }
+                                        selectedContent = null
                                     }
-                                    R.drawable.adamboost -> {
-                                        val now = System.currentTimeMillis()
-                                        if (user.boosts <= 0 || clickedIcons.contains(iconRes) || now - lastBoostClickTime < 30 * 60 * 1000) {
+                                }
+                                R.drawable.adamboost -> {
+                                    val now = System.currentTimeMillis()
+                                    adam?.let {
+                                        if (it.boosts < 1 || clickedIcons.contains(iconRes) || now - lastBoostClickTime < 30 * 60 * 1000) {
                                             selectedContent = iconToContent[iconRes]
                                             return@clickable
                                         }
-                                        clickedIcons.add(iconRes)
+                                        DummyAdamUser.updateUserStat("boosts", -1)
                                         lastBoostClickTime = now
+                                        clickedIcons.add(iconRes)
                                         controller.startRainWithIcon(iconRes)
-                                        selectedContent = iconToContent[iconRes]
+                                        scope.launch {
+                                            activeGlow = GlowType.BOOST
+                                            delay(800)
+                                            activeGlow = null
+                                        }
+                                        selectedContent = null
                                     }
                                 }
                             }
@@ -251,6 +324,8 @@ fun ProfileDetailScreen(
     RainEffectOverlay(controller = controller)
 }
 
+enum class GlowType { BOOST, LIKE, SUPERLIKE }
+
 
 
 
@@ -260,9 +335,16 @@ fun ProfileDetailScreen(
 
 @Composable
 fun ProfileCardContent(user: DummyUserFull, onClick: () -> Unit) {
+    val first = user.photoUris.firstOrNull()
+    val painter = when (first) {
+        is PhotoSource.DrawableRes -> painterResource(first.resId)
+        is PhotoSource.UriString -> rememberAsyncImagePainter(first.uri)
+        null -> painterResource(id = R.drawable.android)
+    }
+
     Column {
         Image(
-            painter = painterResource(id = user.photo),
+            painter = painter,
             contentDescription = "Profile Image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -270,9 +352,11 @@ fun ProfileCardContent(user: DummyUserFull, onClick: () -> Unit) {
                 .fillMaxWidth()
                 .clickable { onClick() }
         )
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
             Text(text = user.name, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = "${user.age} • ${user.city}", style = MaterialTheme.typography.bodyMedium)
@@ -281,4 +365,7 @@ fun ProfileCardContent(user: DummyUserFull, onClick: () -> Unit) {
         }
     }
 }
+
+
+
 

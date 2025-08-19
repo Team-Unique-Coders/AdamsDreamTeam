@@ -47,6 +47,7 @@ dependencies {
     implementation(project(":chat"))
     implementation(project(":mechanic"))
     implementation(project(":handyman"))
+    implementation(project(":uber"))
 
     implementation(project(":tinder"))
     implementation("io.coil-kt:coil-compose:2.6.0")
@@ -73,5 +74,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material.icons.extended)
+
+    implementation("org.osmdroid:osmdroid-android:6.1.16")
 
 }
