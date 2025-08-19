@@ -22,30 +22,39 @@ import androidx.compose.ui.unit.sp
 import com.example.handyman.R as HmR
 import com.project.common_utils.components.MapComponent
 import com.project.common_utils.components.BackArrowIcon
-import com.project.common_utils.components.OrangeButton
 
 @Composable
 fun ProviderProfileScreen(
     onBack: () -> Unit,
     onTakeAppointment: () -> Unit,
+    providerName: String = "Jenny Jones",
     @DrawableRes avatarRes: Int = HmR.drawable.profilepicture
 ) {
+    val (rateLabel, rolePrimary, roleSecondary) = when {
+        providerName.contains("Jean", ignoreCase = true)  -> Triple("$ 12/h", "Painter",  "Carpenter")
+        providerName.contains("Jenny", ignoreCase = true) -> Triple("$ 15/h", "Plumber",  "Carpenter")
+        else                                               -> Triple("$ 15/h", "Handyman", "Carpenter")
+    }
+
+    val mapPeekHeight = 240.dp
+    val avatarSize    = 88.dp
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFEFEFF1))
     ) {
-        /* ---------- HEADER MAP (real map in the background) ---------- */
+        /* ---------- HEADER MAP ---------- */
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp)
+                .height(mapPeekHeight)
                 .align(Alignment.TopCenter)
         ) {
-            MapComponent() // from common_utils (osmdroid compose)
+            MapComponent()
         }
 
-        /* Back chip like the mock (top-left on top of the map) */
+        /* Back chip */
         Surface(
             modifier = Modifier
                 .padding(14.dp)
@@ -56,23 +65,23 @@ fun ProviderProfileScreen(
             shadowElevation = 8.dp
         ) { BackArrowIcon(onClick = onBack) }
 
-        /* Simple green pin in the map center (visual detail from mock) */
+        /* Green pin */
         Box(
             modifier = Modifier
                 .size(18.dp)
                 .align(Alignment.TopCenter)
-                .offset(y = 90.dp) // roughly mid-map
+                .offset(y = (mapPeekHeight / 2) - 20.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF3CCB76))
                 .border(3.dp, Color.White, CircleShape)
         )
 
-        /* ---------- FLOATING CARD that overlaps the map ---------- */
+        /* ---------- FLOATING CARD ---------- */
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .offset(y = 140.dp) // overlap amount
+                .offset(y = mapPeekHeight - (avatarSize / 2) + 16.dp)
                 .align(Alignment.TopCenter)
         ) {
             Card(
@@ -82,12 +91,11 @@ fun ProviderProfileScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                // leave space so the avatar sits in the card
                 Spacer(Modifier.height(46.dp))
 
                 Column(Modifier.padding(horizontal = 18.dp)) {
 
-                    /* Name centered; rating on left; price on right (like mock) */
+                    /* rating | name | price row */
                     Row(
                         Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -103,13 +111,13 @@ fun ProviderProfileScreen(
                         }
                         Spacer(Modifier.weight(1f))
                         Text(
-                            "Jenny Jones",
+                            providerName,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.SemiBold
                             )
                         )
                         Spacer(Modifier.weight(1f))
-                        Text("$ 15/h")
+                        Text(rateLabel)
                     }
 
                     Spacer(Modifier.height(14.dp))
@@ -145,35 +153,50 @@ fun ProviderProfileScreen(
                     Divider()
 
                     Spacer(Modifier.height(10.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-
-                        Spacer(Modifier.width(10.dp))
-                        Column {
-                            Text("Plumber", style = MaterialTheme.typography.titleMedium)
-                            Text("Carpenter", color = Color(0xFF8F9399))
-                        }
+                    Column {
+                        Text(rolePrimary, style = MaterialTheme.typography.titleMedium)
+                        Text(roleSecondary, color = Color(0xFF8F9399))
                     }
 
                     Spacer(Modifier.height(18.dp))
 
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        OrangeButton(onClick = onTakeAppointment, text = "Take appointment")
+                    /* ---- ORANGE CTA ---- */
+                    Button(
+                        onClick = onTakeAppointment,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                            .shadow(12.dp, RoundedCornerShape(12.dp), clip = false),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFF7A00), // <-- Hardcoded orange
+                            contentColor   = Color.White
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                    ) {
+                        Text(
+                            "Take appointment",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
                     }
+
                     Spacer(Modifier.height(18.dp))
                 }
             }
 
-            /* ---------- AVATAR centered on card edge ---------- */
+            /* Avatar */
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .offset(y = (-44).dp) // half inside card
+                    .offset(y = (-avatarSize / 2))
             ) {
                 Image(
                     painter = painterResource(avatarRes),
                     contentDescription = "Profile",
                     modifier = Modifier
-                        .size(88.dp)
+                        .size(avatarSize)
                         .clip(CircleShape)
                         .border(4.dp, Color.White, CircleShape)
                         .shadow(8.dp, CircleShape, clip = false),
