@@ -19,6 +19,7 @@ import com.example.bank.presentation.home.BankHomeScreen
 import com.example.bank.presentation.onboarding.BankIntroScreen
 import com.example.bank.presentation.onboarding.BankStartModeScreen
 import com.example.bank.presentation.onboarding.CreateAccountScreen
+import com.example.bank.presentation.onboarding.LinkBankOptionsScreen
 import com.example.bank.presentation.send.SendConfirmScreen
 import com.example.bank.presentation.send.SendMoneyScreen
 import com.example.bank.presentation.send.SendSuccessScreen
@@ -54,7 +55,10 @@ fun NavGraphBuilder.bankGraph(
         composable(BankRoutes.ONBOARDING_START_MODE) {
             val scope = rememberCoroutineScope()
             BankStartModeScreen(
-                onUseDemo = {
+                // Now: Link → go to options screen
+                onUseDemo = { navController.navigate(BankRoutes.LINK_OPTIONS) },
+                // And: Open account immediately (demo)
+                onConnectSimulated = {
                     scope.launch {
                         repo.openCheckingAccount()
                         navController.navigate(BankRoutes.HOME) {
@@ -62,8 +66,23 @@ fun NavGraphBuilder.bankGraph(
                         }
                     }
                 },
-                onConnectSimulated = { /* later */ },
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(BankRoutes.LINK_OPTIONS) {
+            val scope = rememberCoroutineScope()
+            LinkBankOptionsScreen(
+                onBack = { navController.popBackStack() },
+                onContinue = { _ /* optionId */ ->
+                    // Demo: regardless of selection, "link" by opening a checking account and go Home
+                    scope.launch {
+                        repo.openCheckingAccount()
+                        navController.navigate(BankRoutes.HOME) {
+                            popUpTo(BankRoutes.ONBOARDING_INTRO) { inclusive = true }
+                        }
+                    }
+                }
             )
         }
 
