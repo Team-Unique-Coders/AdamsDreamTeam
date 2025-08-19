@@ -2,120 +2,177 @@ package com.example.handyman.navigation
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavHostController
 import com.example.handyman.ui.*
 import com.example.handyman.R as HmR
 
-
-/** Public route other modules can reference */
+/** Public route */
 const val HandymanRootRoute = "handyman_root"
 
-/** Internal routes for this feature */
+/** Internal routes */
 private object HmRoutes {
-    const val Welcome  = "hm_welcome"
-    const val Form     = "hm_form"
-    const val List     = "hm_list"
-    const val Profile  = "hm_profile"
-    const val Schedule = "hm_schedule"
-    const val Checkout = "hm_checkout"
-    const val Filters  = "hm_filters"
-    const val Success  = "hm_success"
-    const val Map      = "hm_map"
+    const val WELCOME  = "hm_welcome"
+    const val FORM     = "hm_form"
+    const val LIST     = "hm_list"
+    const val PROFILE  = "hm_profile"
+    const val SCHEDULE = "hm_schedule"
+    const val CHECKOUT = "hm_checkout"
+    const val FILTERS  = "hm_filters"
+    const val SUCCESS  = "hm_success"
+    const val MAP      = "hm_map"
 }
 
-/** Entry composable for the Handyman feature */
 @Composable
 fun HandymanNavEntry(
-    externalNav: NavHostController? = null,   // reserved (not used now)
-    @DrawableRes heroResId: Int? = null,      // welcome/hero image
-    @DrawableRes listBannerResId: Int? = null // optional list header image
+    externalNav: NavHostController? = null,   // reserved
+    @DrawableRes heroResId: Int? = null,
+    @DrawableRes listBannerResId: Int? = null
 ) {
     val nav = rememberNavController()
 
     NavHost(
         navController = nav,
-        startDestination = HmRoutes.Welcome
+        startDestination = HmRoutes.WELCOME
     ) {
-        composable(HmRoutes.Welcome) {
+        /* -------------------- WELCOME -------------------- */
+        composable(HmRoutes.WELCOME) {
             HandymanWelcomeScreen(
-                onLetsGo = { nav.navigate(HmRoutes.Form) },
+                onLetsGo = { nav.navigate(HmRoutes.FORM) },
                 onBack = { nav.popBackStack() },
                 heroResId = heroResId ?: HmR.drawable.handyman_hero
             )
         }
 
-        composable(HmRoutes.Form) {
+        /* -------------------- FORM -------------------- */
+        composable(HmRoutes.FORM) {
             HandymanFormScreen(
-                onNext = { nav.navigate(HmRoutes.List) },
+                // NOTE: your current screen takes () -> Unit
+                onNext = { nav.navigate(HmRoutes.LIST) },
                 onBack = { nav.popBackStack() }
             )
         }
 
-        // LIST
-        composable(HmRoutes.List) {
+        /* -------------------- LIST -------------------- */
+        composable(HmRoutes.LIST) {
+            val filters = nav.currentBackStackEntry
+                ?.savedStateHandle
+                ?.get<FiltersState>("filters")
+
             ProviderListScreen(
                 onBack = { nav.popBackStack() },
-                onOpenProvider = { nav.navigate(HmRoutes.Profile) },
-                onOpenFilters  = { nav.navigate(HmRoutes.Filters) },
-                onOpenMap      = { nav.navigate(HmRoutes.Map) }
+                onOpenProvider = { p ->
+                    nav.currentBackStackEntry?.savedStateHandle?.set("selectedProviderName", p.name)
+                    nav.currentBackStackEntry?.savedStateHandle?.set("selectedProviderPrice", p.pricePerHour)
+                    nav.navigate(HmRoutes.PROFILE)
+                },
+                onOpenFilters  = { nav.navigate(HmRoutes.FILTERS) },
+                onOpenMap      = { nav.navigate(HmRoutes.MAP) },
+                filters = filters,
+                bannerResId = listBannerResId
             )
         }
 
-        // MAP
-        composable(HmRoutes.Map) {
+        /* -------------------- MAP -------------------- */
+        composable(HmRoutes.MAP) {
             MapScreen(
                 onBack = { nav.popBackStack() },
                 onOpenList = {
-                    // If List is underneath, just pop to it; otherwise navigate to it.
-                    val popped = nav.popBackStack(HmRoutes.List, inclusive = false)
-                    if (!popped) nav.navigate(HmRoutes.List)
+                    val popped = nav.popBackStack(HmRoutes.LIST, inclusive = false)
+                    if (!popped) nav.navigate(HmRoutes.LIST)
                 },
-                onOpenProvider = { nav.navigate(HmRoutes.Profile) }   // ← tap mini card -> profile
+                onOpenProvider = { providerName ->
+                    nav.currentBackStackEntry?.savedStateHandle?.set("selectedProviderName", providerName)
+                    nav.navigate(HmRoutes.PROFILE)
+                }
             )
         }
 
-        // PROFILE
-        composable(HmRoutes.Profile) {
+        /* -------------------- PROFILE -------------------- */
+        composable(HmRoutes.PROFILE) {
+            nav.previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<String>("selectedProviderName")
+                ?.let { sel ->
+                    nav.currentBackStackEntry?.savedStateHandle?.set("selectedProviderName", sel)
+                }
+
+            val providerName = nav.currentBackStackEntry
+                ?.savedStateHandle
+                ?.get<String>("selectedProviderName") ?: "Jenny Jones"
+
             ProviderProfileScreen(
                 onBack = { nav.popBackStack() },
-                onTakeAppointment = { nav.navigate(HmRoutes.Schedule) }
+                onTakeAppointment = { nav.navigate(HmRoutes.SCHEDULE) },
+                providerName = providerName
             )
         }
 
-        // SCHEDULE
-        composable(HmRoutes.Schedule) {
+        /* -------------------- SCHEDULE -------------------- */
+        composable(HmRoutes.SCHEDULE) {
+            val providerName = nav.previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<String>("selectedProviderName") ?: "Jenny Jones"
+
             ScheduleScreen(
                 onBack = { nav.popBackStack() },
-                onConfirm = { _, _ -> nav.navigate(HmRoutes.Checkout) }
+                onConfirm = { date, time ->
+                    nav.currentBackStackEntry?.savedStateHandle?.apply {
+                        set("chosenDate", date)
+                        set("chosenTime", time)
+                    }
+                    nav.navigate(HmRoutes.CHECKOUT)
+                },
+                providerName = providerName
             )
         }
 
-        // CHECKOUT
-        composable(HmRoutes.Checkout) {
+        /* -------------------- CHECKOUT -------------------- */
+        composable(HmRoutes.CHECKOUT) {
+            val date = nav.previousBackStackEntry
+                ?.savedStateHandle?.get<String>("chosenDate") ?: "20 March, Thu"
+            val time = nav.previousBackStackEntry
+                ?.savedStateHandle?.get<String>("chosenTime") ?: "14h"
+
+            val providerName: String = runCatching {
+                nav.getBackStackEntry(HmRoutes.PROFILE)
+                    .savedStateHandle
+                    .get<String>("selectedProviderName")
+            }.getOrNull() ?: "Jenny Jones"
+
+            val pricePerHour: Int = runCatching {
+                nav.getBackStackEntry(HmRoutes.LIST)
+                    .savedStateHandle
+                    .get<Int>("selectedProviderPrice")
+            }.getOrNull() ?: 15
+
             OrderCheckoutScreen(
                 onBack = { nav.popBackStack() },
-                onPlaceOrder = { nav.navigate(HmRoutes.Success) }
+                onPlaceOrder = { nav.navigate(HmRoutes.SUCCESS) },
+                providerName = providerName,
+                pricePerHour = pricePerHour,
+                dateLabel = "$date • $time"
             )
         }
 
-        // SUCCESS
-        composable(HmRoutes.Success) {
+        /* -------------------- SUCCESS -------------------- */
+        composable(HmRoutes.SUCCESS) {
             SuccessScreen(
-                onGoHome = { nav.popBackStack(HmRoutes.Welcome, inclusive = false) }
+                onGoHome = {
+                    val popped = nav.popBackStack(HmRoutes.LIST, inclusive = false)
+                    if (!popped) nav.navigate(HmRoutes.LIST)
+                }
             )
         }
 
-        // FILTERS
-        composable(HmRoutes.Filters) {
+        /* -------------------- FILTERS -------------------- */
+        composable(HmRoutes.FILTERS) {
             FiltersScreen(
                 onBack = { nav.popBackStack() },
                 onApply = { newFilters ->
-                    nav.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("filters", newFilters)
+                    nav.previousBackStackEntry?.savedStateHandle?.set("filters", newFilters)
                     nav.popBackStack()
                 }
             )
