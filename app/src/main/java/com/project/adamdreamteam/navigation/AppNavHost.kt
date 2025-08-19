@@ -19,20 +19,20 @@ import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
 import com.example.tinder.nav.AppNavigation
 import com.example.tinder.ui.RainEffectController
+import com.example.bank.entry.BankEntry
+import com.example.chat.entry.ChatEntry
+import com.example.mechanic.navigation.MechanicNavEntry
+import com.example.handyman.navigation.HandymanNavEntry
 import com.example.laundry.navigation.LaundryFeatureEntry
 import com.example.laundry.navigation.addLaundryGraph
+import com.example.learn.navigation.LearnNavEntry
 import com.project.adamdreamteam.ui.home.HomePage
 import androidx.navigation.compose.rememberNavController
 import com.example.chat.entry.ChatEntry
 import com.example.handyman.navigation.HandymanNavEntry
 import com.example.learn.navigation.LearnNavEntry
 import com.example.mechanic.navigation.MechanicNavEntry
-
-import com.project.adamdreamteam.R as AppR
-
-
 import com.example.tinder.ui.LoopingMusicButton
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,6 +75,7 @@ fun AppNavHost(
             )
         }
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
+
         addLaundryGraph(
             nav = navController,
             onOpen = { route -> navController.navigate(route) }
@@ -88,6 +89,7 @@ fun AppNavHost(
                 selfRoute = Routes.LAUNDRY
             )
         }
+
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
         composable(Routes.HANDYMAN) {
@@ -97,8 +99,8 @@ fun AppNavHost(
 
 
         composable(Routes.BANK) {
-            BankScreen(
-                onBackToHome = {
+            BankEntry(
+                onClose = {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.HOME) { inclusive = false }
                         launchSingleTop = true
@@ -106,6 +108,7 @@ fun AppNavHost(
                 }
             )
         }
+
     }
 }
 
