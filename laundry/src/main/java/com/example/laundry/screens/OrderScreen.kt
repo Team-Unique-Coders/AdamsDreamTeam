@@ -29,6 +29,7 @@ import coil.compose.AsyncImage
 import com.example.laundry.data.LaundryOptions
 import com.example.laundry.data.LaundryViewModel
 import com.example.laundry.navigation.LaundryDestinations
+import com.project.common_utils.components.OrangeButton
 import java.util.Locale
 
 /* ───────────────────────── Data models ───────────────────────── */
@@ -108,16 +109,10 @@ fun OrderScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(12.dp))
-                Button(
+                OrangeButton(
                     onClick = placeOrder,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = orange)
-                ) {
-                    Text("Place order")
-                }
+                    "Place order"
+                )
             }
         }
     ) { inner ->
