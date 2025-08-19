@@ -3,27 +3,17 @@ package com.example.laundry.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,24 +23,27 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.laundry.R
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.laundry.R
+import com.example.laundry.data.Provider
+import com.example.laundry.data.fake
 import com.example.laundry.navigation.LaundryDestinations
-import java.nio.file.WatchEvent
+
+/* ---------- tiny helpers ---------- */
+private fun providerKey(p: Provider) =
+    "%s|%.5f|%.5f".format(java.util.Locale.US, p.name, p.lat, p.lon)
+
+private fun cityFrom(address: String): String =
+    address.split(",").map { it.trim() }.getOrNull(1) ?: address
+
+/* ---------- screen ---------- */
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaundryHomeScreen(
+    providers: List<Provider>,
     onOpen: (String) -> Unit = {},
     onBack: () -> Unit = {},
 ) {
@@ -61,83 +54,77 @@ fun LaundryHomeScreen(
             }
         }
     ) { paddingValues ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
 
+            /* hero section */
             item {
-                // Container Box to stack image, white Box, and orange box
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(400.dp) // total height for overlapping
+                        .height(400.dp)
                 ) {
-                    // Top Image
                     Image(
                         painter = painterResource(R.drawable.maskgroup),
                         contentDescription = "background",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(280.dp), // adjust height as needed
+                            .height(280.dp),
                         contentScale = ContentScale.Crop
                     )
 
-                    // Orange Box behind White Box
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
-                            .align(Alignment.BottomCenter) // touches bottom of container
+                            .align(Alignment.BottomCenter)
                             .background(Color(0xFFFF9800))
-                    ){
+                    ) {
                         Row(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter),
+                            modifier = Modifier.align(Alignment.BottomCenter),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically) {
-                            IconTextButton(com.project.common_utils.R.drawable.heart,"Favorites") { }
-                            IconTextButton(R.drawable.order,"Orders") { }
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconTextButton(com.project.common_utils.R.drawable.heart, "Favorites") { }
+                            IconTextButton(R.drawable.order, "Orders") {
+                                onOpen(LaundryDestinations.VIEW_ORDERS)
+                            }
                         }
                     }
 
-                    // Main White Box floating above
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp)
-                            .align(Alignment.Center) // center over container
+                            .height(250.dp)
+                            .align(Alignment.Center)
                             .padding(horizontal = 20.dp)
-                            .offset(y = (30).dp)
-                            .shadow(
-                                elevation = 16.dp,
-                                shape = RoundedCornerShape(16.dp),
-                                clip = false
-                            )
-                            .background(Color.White, shape = RoundedCornerShape(16.dp))
+                            .offset(y = 30.dp)
+                            .shadow(16.dp, RoundedCornerShape(16.dp), clip = false)
+                            .background(Color.White, RoundedCornerShape(16.dp))
                     ) {
-                        WhiteBoxValue()
+                        WhiteBoxValue(onOpen)
                     }
                 }
             }
 
+            /* header row */
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp, 0.dp),
+                        .padding(horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween) {
-                    Row {
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("House Cleaner", color = Color.Black)
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("120", color = Color.LightGray)
+                        Text("${providers.size}", color = Color.LightGray)
                     }
-                    IconButton(onClick = {
-                        onOpen(LaundryDestinations.FILTER)
-                    }) {
+                    IconButton(onClick = { onOpen(LaundryDestinations.FILTER) }) {
                         Icon(
                             painter = painterResource(id = com.project.common_utils.R.drawable.options),
                             contentDescription = "Options",
@@ -148,24 +135,22 @@ fun LaundryHomeScreen(
                 }
             }
 
-            // Additional list items below
-            items(10) { index ->
-                Box(
-                    modifier = Modifier.padding(0.dp,0.dp,0.dp,20.dp),
-
-                ){
-                    CardDetails(index,onOpen)
-                }
-            }
-            items(10) { index ->
-                Spacer(Modifier.height(3.dp))
+            /* REAL provider cards */
+            items(
+                items = providers,
+                key = { providerKey(it) }
+            ) { p ->
+                ProviderCard(
+                    provider = p,
+                    onOpen = onOpen
+                )
+                Spacer(Modifier.height(12.dp))
             }
         }
     }
 }
 
-
-
+/* ---------- pieces ---------- */
 
 @Composable
 fun IconTextButton(
@@ -175,13 +160,10 @@ fun IconTextButton(
 ) {
     Row(
         modifier = Modifier
-            .clickable { onClick() }  // Entire Row is clickable
+            .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp)
-            .background(
-                color = Color.Transparent, // optional background
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp), // inner padding
+            .background(Color.Transparent, RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -191,59 +173,57 @@ fun IconTextButton(
             tint = Color.White
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = text,
-            color = Color.White,
-            style = MaterialTheme.typography.bodyMedium
-        )
+        Text(text = text, color = Color.White, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
 @Composable
-fun WhiteBoxValue(){
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-
-    ) {
+fun WhiteBoxValue(
+    onOpen: (String) -> Unit
+) {
+    Column(Modifier.fillMaxSize()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Johannesburg, 1 Road Ubuntu",
-                fontSize = 15.sp)
-            Icon(
-                painter = painterResource(id = R.drawable.location),
-                contentDescription = "Options",
-                modifier = Modifier.size(24.dp),
-                tint = Color(0xFFFF9800)
-            )
+            Text("Johannesburg, 1 Road Ubuntu", fontSize = 15.sp)
+            IconButton(
+                onClick = {onOpen(LaundryDestinations.MAPSCREEN)}
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.location),
+                    contentDescription = "Options",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color(0xFFFF9800)
+                )
+            }
         }
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        HorizontalDivider()
         Row(
-            modifier =Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-
-            WhiteBoxValueColumn("CHOOSE DATES","20 Mar - 10h")
-            VerticalDivider( modifier = Modifier
-                .height(52.dp), DividerDefaults.Thickness, DividerDefaults.color)
-            WhiteBoxValueColumn("KG","5")
-            VerticalDivider(modifier = Modifier
-                .height(52.dp), DividerDefaults.Thickness, DividerDefaults.color)
-            WhiteBoxValueColumn("DRY","2")
-            VerticalDivider(modifier = Modifier
-                .height(52.dp), DividerDefaults.Thickness, DividerDefaults.color)
-            WhiteBoxValueColumn("IRONING","Yes")
+            WhiteBoxValueColumn("CHOOSE DATES", "20 Mar - 10h")
+            VerticalDivider(Modifier.height(52.dp))
+            WhiteBoxValueColumn("KG", "5")
+            VerticalDivider(Modifier.height(52.dp))
+            WhiteBoxValueColumn("DRY", "2")
+            VerticalDivider(Modifier.height(52.dp))
+            WhiteBoxValueColumn("IRONING", "Yes")
         }
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        HorizontalDivider()
 
         Column(
-            modifier = Modifier.padding(0.dp,10.dp),
+            modifier = Modifier.padding(vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(10.dp,0.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("Search location/Name")
@@ -253,119 +233,95 @@ fun WhiteBoxValue(){
                 )
             }
             Button(
-                onClick = {},
+                onClick = { /* TODO search */ },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFF9800), // Orange background
-                    contentColor = Color.White // Text color
+                    containerColor = Color(0xFFFF9800),
+                    contentColor = Color.White
                 )
-                ) {
-                Text("Search",
-                    modifier = Modifier.padding(70.dp,0.dp)
-                )
+            ) {
+                Text("Search", modifier = Modifier.padding(horizontal = 70.dp))
             }
+
         }
-
     }
 }
 
 @Composable
-fun WhiteBoxValueColumn(heading:String,value:String){
-    Column(
-        modifier = Modifier.padding(10.dp)
-    ) {
-            Text(heading,
-                color = Color.LightGray,
-                fontSize = 13.sp
-            )
-            Text(value,
-                color = Color.Black,
-                fontSize = 15.sp
-            )
+fun WhiteBoxValueColumn(heading: String, value: String) {
+    Column(Modifier.padding(10.dp)) {
+        Text(heading, color = Color.LightGray, fontSize = 13.sp)
+        Text(value, color = Color.Black, fontSize = 15.sp)
     }
 }
 
 @Composable
-fun CardDetails(
-    index:Int,
-    onOpen: (String) -> Unit = {}
-){
+private fun ProviderCard(
+    provider: Provider,
+    onOpen: (String) -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(250.dp)
-            // center over container
             .padding(horizontal = 20.dp)
-            .offset(y = (30).dp)
-            .clickable{ onOpen(LaundryDestinations.MAPSCREEN)}
-            .shadow(
-                elevation = 16.dp,
-                shape = RoundedCornerShape(16.dp),
-                clip = false
-            )
-            .background(Color.White, shape = RoundedCornerShape(16.dp))
+            .offset(y = 30.dp)
+            .clickable(onClick = { onOpen(LaundryDestinations.details(providerKey(provider))) })
+            .shadow(16.dp, RoundedCornerShape(16.dp), clip = false)
+            .background(Color.White, RoundedCornerShape(16.dp))
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Image(
-                painter = painterResource(R.drawable.card),
-                contentDescription = "cardImage",
+        Column(Modifier.fillMaxSize()) {
+            // Photo
+            AsyncImage(
+                model = provider.photoUrl,
+                contentDescription = provider.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
             )
 
-            Column(
-                modifier = Modifier.padding(5.dp)
-            ) {
-                Text(
-                    "Jessy Jones",
-                    color = Color.Black,
-                    fontSize = 18.sp
-                )
+            // Text info
+            Column(Modifier.padding(12.dp)) {
+                Text(provider.name, color = Color.Black, fontSize = 18.sp)
                 Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    "Johannesburg",
-                    color = Color.LightGray,
-                    fontSize = 13.sp
-                )
-                Spacer(modifier = Modifier.height(3.dp))
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                Text(cityFrom(provider.address), color = Color.LightGray, fontSize = 13.sp)
+                Spacer(modifier = Modifier.height(6.dp))
+                HorizontalDivider()
             }
 
-            Row (
-                modifier = Modifier.fillMaxWidth().padding(10.dp,0.dp),
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
-            ){
-                CardDetailsValues(com.project.common_utils.R.drawable.stars,"4.8")
-                CardDetailsValues(R.drawable.route,"500 m")
-                Text("$ 15/kg",fontSize = 12.sp)
+            ) {
+                CardDetailsValues(com.project.common_utils.R.drawable.stars, "${provider.rating}")
+                CardDetailsValues(R.drawable.route, "${provider.distanceMiles} mi")
+                Text(provider.priceText, fontSize = 12.sp)
             }
-
         }
     }
 }
 
 @Composable
-fun CardDetailsValues(id: Int, value: String){
-    Row {
+fun CardDetailsValues(id: Int, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             painter = painterResource(id),
-            contentDescription = "star",
-            modifier =Modifier.size(14.dp),
+            contentDescription = null,
+            modifier = Modifier.size(14.dp),
             tint = Color(0xFFFF9800)
         )
-        Text(
-            value,
-            fontSize = 12.sp
-        )
+        Spacer(Modifier.width(4.dp))
+        Text(value, fontSize = 12.sp)
     }
 }
 
-
-@Preview(showBackground = true)
+@Preview(showBackground = true, widthDp = 360, heightDp = 840)
 @Composable
-fun LaundryHomeScreenPreview(){
-    LaundryHomeScreen()
+fun LaundryHomeScreenPreview() {
+    MaterialTheme {
+        LaundryHomeScreen(providers = fake)
+    }
 }

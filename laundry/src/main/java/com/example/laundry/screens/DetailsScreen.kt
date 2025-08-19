@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,12 +35,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.laundry.components.MapsCompo
 import com.example.laundry.data.Provider
 import com.example.laundry.data.fake
+import com.example.laundry.data.providerKey
 import com.example.laundry.navigation.LaundryDestinations
+import com.project.common_utils.MapDetailComponent
+import com.project.common_utils.components.CircularImageHolderUrl
+import com.project.common_utils.components.MapComponent
 import com.project.common_utils.components.OrangeButton
+import com.utsman.osmandcompose.Marker
+import com.utsman.osmandcompose.rememberMarkerState
 import dalvik.system.InMemoryDexClassLoader
+import org.osmdroid.util.GeoPoint
 
 @Composable
 fun ProviderDetailScreen(
@@ -48,25 +55,27 @@ fun ProviderDetailScreen(
     onOpen: (String) -> Unit = {},
 ) {
     Scaffold(
-        bottomBar = {
-            Box(Modifier.fillMaxWidth().padding(16.dp)) {
-                OrangeButton(onClick = {
-                    onOpen(LaundryDestinations.SCHEDULESCREEN)
-                }, "Take Appointment")
-            }
-        },
+
     ) { inner ->
-        Column(Modifier.fillMaxSize().padding(inner)) {
+        Column(Modifier
+            .fillMaxSize()
+            .padding(inner)) {
             Box {
                 // Header map
-                MapsCompo(
-                    latitude = provider.lat,
-                    longitude = provider.lon,
-                    zoom = 16.0,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(220.dp)
-                )
+                ElevatedCard(Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)) {
+                    MapComponent(
+                        latitude = provider.lat,
+                        longitude = provider.lon,
+                        zoom = 16.0,
+                    ){
+                        val state = rememberMarkerState(geoPoint = GeoPoint(provider.lat, provider.lon))
+                        Marker(
+                            state = state,
+                        )
+                    }
+                }
 
                 // Back
                 SmallFloatingActionButton(
@@ -78,32 +87,40 @@ fun ProviderDetailScreen(
                 }
 
                 // Overlapping avatar
-                AsyncImage(
-                    model = provider.photoUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(112.dp)
-                        .clip(CircleShape)
-                        .align(Alignment.BottomCenter)
-                        .offset(y = 56.dp),
-                    contentScale = ContentScale.Crop
-                )
+
             }
 
-            Spacer(Modifier.height(64.dp))
+//            Spacer(Modifier.height(64.dp))
 
-            Column(Modifier.padding(horizontal = 20.dp)) {
-                Text(provider.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("⭐ ${provider.rating}", style = MaterialTheme.typography.titleMedium)
-                    Text(provider.priceText, style = MaterialTheme.typography.titleMedium)
+            Box (
+                modifier = Modifier
+                    .padding(20.dp)
+                    .offset(y = (-50).dp)
+            ){
+                Column(Modifier.padding(horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularImageHolderUrl(provider.photoUrl, "description")
+                    }
+                    Text(
+                        provider.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("⭐ ${provider.rating}", style = MaterialTheme.typography.titleMedium)
+                        Text(provider.priceText, style = MaterialTheme.typography.titleMedium)
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    Text(provider.about, color = Color.Gray)
                 }
-                Spacer(Modifier.height(12.dp))
-                Text(provider.about, color = Color.Gray)
             }
-
-            Spacer(Modifier.height(16.dp))
             HorizontalDivider()
             Column(Modifier.padding(horizontal = 20.dp, vertical = 14.dp)) {
                 Text(provider.address, style = MaterialTheme.typography.titleMedium)
@@ -120,6 +137,18 @@ fun ProviderDetailScreen(
                     Text(price, style = MaterialTheme.typography.titleMedium)
                 }
                 HorizontalDivider(thickness = 0.7.dp, color = Color(0x11000000))
+
+            }
+            Spacer(Modifier.height(10.dp))
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                OrangeButton(
+                    onClick = { onOpen(LaundryDestinations.schedule(providerKey(provider))) },
+                    text = "Take Appointment"
+                )
             }
         }
     }
