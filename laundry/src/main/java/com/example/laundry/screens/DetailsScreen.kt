@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.laundry.data.Provider
 import com.example.laundry.data.fake
+import com.example.laundry.data.providerKey
 import com.example.laundry.navigation.LaundryDestinations
 import com.project.common_utils.MapDetailComponent
 import com.project.common_utils.components.CircularImageHolderUrl
@@ -144,9 +145,10 @@ fun ProviderDetailScreen(
                 .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                OrangeButton(onClick = {
-                    onOpen(LaundryDestinations.SCHEDULESCREEN)
-                }, "Take Appointment")
+                OrangeButton(
+                    onClick = { onOpen(LaundryDestinations.schedule(providerKey(provider))) },
+                    text = "Take Appointment"
+                )
             }
         }
     }

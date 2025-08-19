@@ -89,7 +89,9 @@ fun LaundryHomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconTextButton(com.project.common_utils.R.drawable.heart, "Favorites") { }
-                            IconTextButton(R.drawable.order, "Orders") { }
+                            IconTextButton(R.drawable.order, "Orders") {
+                                onOpen(LaundryDestinations.VIEW_ORDERS)
+                            }
                         }
                     }
 

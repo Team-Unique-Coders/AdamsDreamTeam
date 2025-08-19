@@ -10,10 +10,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.bank.BankScreen
 import com.example.tinder.nav.AppNavigation
 import com.example.tinder.ui.RainEffectController
 import com.example.bank.entry.BankEntry
@@ -25,6 +28,10 @@ import com.example.laundry.navigation.addLaundryGraph
 import com.example.learn.navigation.LearnNavEntry
 import com.project.adamdreamteam.ui.home.HomePage
 import androidx.navigation.compose.rememberNavController
+import com.example.chat.entry.ChatEntry
+import com.example.handyman.navigation.HandymanNavEntry
+import com.example.learn.navigation.LearnNavEntry
+import com.example.mechanic.navigation.MechanicNavEntry
 import com.example.tinder.ui.LoopingMusicButton
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -32,7 +39,7 @@ import com.example.tinder.ui.LoopingMusicButton
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,
@@ -85,7 +92,9 @@ fun AppNavHost(
 
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
-        composable(Routes.HANDYMAN) { HandymanNavEntry() }
+        composable(Routes.HANDYMAN) {
+            HandymanNavEntry()
+        }
         composable(Routes.MECHANIC) { MechanicNavEntry() }
 
 
