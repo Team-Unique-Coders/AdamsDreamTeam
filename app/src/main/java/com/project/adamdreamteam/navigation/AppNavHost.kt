@@ -38,6 +38,9 @@ import com.project.adamdreamteam.R as AppR
 
 
 import com.example.tinder.ui.LoopingMusicButton
+import com.example.tinder.ui.animation.LoopingMusicButton
+import com.example.tinder.ui.animation.RainEffectController
+import com.example.uber.nav.UberNavigation
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +59,7 @@ fun AppNavHost(
             HomePage(onOpen = { route -> navController.navigate(route) })
         }
 
-        composable(Routes.UBER) { StubScreen("Uber") }
+        composable(Routes.UBER) { UberNavigation()}
 
         composable(Routes.TINDER) {
             LoopingMusicButton()

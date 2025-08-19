@@ -1,5 +1,6 @@
 package com.example.tinder.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -7,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,31 +16,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -51,8 +41,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.tinder.R
-import androidx.compose.foundation.BorderStroke
+import coil.compose.rememberAsyncImagePainter
+import com.example.tinder.data.DummyAdamUser
+import com.example.tinder.data.DummyDataSource
+import com.example.tinder.data.DummyUserFull
+import com.example.tinder.data.PhotoSource
 
 
 @Composable
@@ -292,45 +287,25 @@ fun EnableGeolocation(onTutorial: () -> Unit) {
 fun Tutorial(onMain: () -> Unit) {
     val list = listOf(
         buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("Return ")
-            }
-            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) {
-                append("To profile")
-            }
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Return ") }
+            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("To profile") }
         } to R.drawable.returnemote,
         buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("No Favorite ")
-            }
-            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) {
-                append("The profile will not appear")
-            }
-        } to R.drawable.sadadam,
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("No Favorite ") }
+            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("The profile will not appear") }
+        } to R.drawable.block,
         buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("Like ")
-            }
-            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) {
-                append("If it's mutual, you can talk together")
-            }
-        } to R.drawable.happyadam,
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Like ") }
+            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("If it's mutual, you can talk together") }
+        } to R.drawable.like,
         buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("Super Like ")
-            }
-            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) {
-                append("Indicate visually that you are interested")
-            }
-        } to R.drawable.love,
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Super Like ") }
+            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("Indicate visually that you are interested") }
+        } to R.drawable.superlik,
         buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("Boost ")
-            }
-            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) {
-                append("Be top profile for 30mins")
-            }
-        } to R.drawable.adamboost
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Boost ") }
+            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("Be top profile for 30mins") }
+        } to R.drawable.boost
     )
 
     Column(
@@ -339,24 +314,22 @@ fun Tutorial(onMain: () -> Unit) {
             .background(Color.White)
             .padding(24.dp)
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.adamtut),
+            contentDescription = "Main Logo",
+            modifier = Modifier
+                .size(200.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
-                // 🔹 Only Image (removed TUTORIAL text)
-                Image(
-                    painter = painterResource(id = R.drawable.adamtut),
-                    contentDescription = "Main Logo",
-                    modifier = Modifier
-                        .size(200.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
             items(list) { (label, imageRes) ->
                 Row(
                     modifier = Modifier
@@ -402,52 +375,90 @@ fun Tutorial(onMain: () -> Unit) {
 }
 
 
-
-
-
-
 //07
 @Composable
 fun ProfileFullScreen(
-    photo: Int,
-    name: String,
-    age: Int,
-    city: String,
+    userId: Int,
     navController: NavController
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    val user = DummyDataSource.dummyUsersFull.find { it.id == userId }
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            Image(
-                painter = painterResource(id = photo),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.7f)
-            )
+    if (user == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("User not found (id=$userId)")
+        }
+        return
+    }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(text = name, style = MaterialTheme.typography.titleLarge)
-                Text(text = "$age years old", style = MaterialTheme.typography.bodyMedium)
-                Text(text = city, style = MaterialTheme.typography.bodyMedium)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val firstPhoto = user.photoUris.firstOrNull()
+        if (firstPhoto != null) {
+            when (firstPhoto) {
+                is PhotoSource.DrawableRes -> {
+                    Image(
+                        painter = painterResource(id = firstPhoto.resId),
+                        contentDescription = "${user.name}'s photo",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                is PhotoSource.UriString -> {
+                    AsyncImage(
+                        model = firstPhoto.uri,
+                        contentDescription = "${user.name}'s photo",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
+        } else {
+            Image(
+                painter = painterResource(id = android.R.drawable.ic_menu_report_image),
+                contentDescription = "No photo",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp),
+                contentScale = ContentScale.Crop
+            )
         }
 
-        // Back button
-        IconButton(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.TopStart)
-        ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = user.name, style = MaterialTheme.typography.headlineMedium)
+        Text(text = "${user.age}, ${user.city}", style = MaterialTheme.typography.bodyLarge)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("About Me", style = MaterialTheme.typography.titleMedium)
+        Text(user.aboutMe, style = MaterialTheme.typography.bodyMedium)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(onClick = { navController.popBackStack() }) {
+            Text("Back")
         }
     }
 }
+
+
+
+
+
+
+
+
 
 

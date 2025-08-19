@@ -1,15 +1,18 @@
 package com.example.tinder.nav
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.tinder.data.DummyAdamUser
 import com.example.tinder.ui.AddProfilePicture
 import com.example.tinder.ui.EnableGeolocation
 import com.example.tinder.ui.ProfileFullScreen
-import com.example.tinder.ui.RainEffectController
+import com.example.tinder.ui.animation.RainEffectController
 import com.example.tinder.ui.TakePhoto
 import com.example.tinder.ui.Tutorial
 import com.example.tinder.ui.WelcomeScreen
@@ -19,7 +22,6 @@ import com.example.tinder.ui.mainscreen.LikeScreen
 import com.example.tinder.ui.mainscreen.ModifyProfile
 import com.example.tinder.ui.mainscreen.ProfileDetailScreen
 import com.example.tinder.ui.mainscreen.SuperLikeScreen
-
 
 @Composable
 fun AppNavigation(
@@ -62,7 +64,7 @@ fun AppNavigation(
             ProfileDetailScreen(
                 controller = controller,
                 navController = navController,
-                onNext = {navController.navigate(Routes.MODIFY_PROFILE)},
+                onNext = { navController.navigate(Routes.MODIFY_PROFILE) },
             )
         }
 
@@ -86,27 +88,25 @@ fun AppNavigation(
                 onNoThanks = { navController.popBackStack() }
             )
         }
+
         composable(Routes.MODIFY_PROFILE) {
             ModifyProfile(onNext = { navController.popBackStack() })
         }
+
         composable(
-            Routes.PROFILE_FULL,
+            route = "profileFull/{userId}",
             arguments = listOf(
-                navArgument("photo") { type = NavType.IntType },
-                navArgument("name") { type = NavType.StringType },
-                navArgument("age") { type = NavType.IntType },
-                navArgument("city") { type = NavType.StringType }
+                navArgument("userId") { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            val args = backStackEntry.arguments!!
-            ProfileFullScreen(
-                photo = args.getInt("photo"),
-                name = args.getString("name")!!,
-                age = args.getInt("age"),
-                city = args.getString("city")!!,
-                navController = navController
-            )
+            val userId = backStackEntry.arguments?.getInt("userId") ?: -1
+            ProfileFullScreen(userId = userId, navController = navController)
         }
-    }
+
+        }
+}
+
+fun NavController.navigateToProfileFull(userId: Int) {
+    this.navigate("profileFull/$userId")
 }
 
