@@ -48,11 +48,6 @@ fun LaundryHomeScreen(
     onBack: () -> Unit = {},
 ) {
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = {}) {
-                Icon(Icons.Filled.Home, contentDescription = "Go to Home")
-            }
-        }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -207,11 +202,11 @@ fun WhiteBoxValue(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             WhiteBoxValueColumn("CHOOSE DATES", "20 Mar - 10h")
-            VerticalDivider(Modifier.height(52.dp))
+            VerticalDivider(Modifier.height(60.dp))
             WhiteBoxValueColumn("KG", "5")
-            VerticalDivider(Modifier.height(52.dp))
+            VerticalDivider(Modifier.height(60.dp))
             WhiteBoxValueColumn("DRY", "2")
-            VerticalDivider(Modifier.height(52.dp))
+            VerticalDivider(Modifier.height(60.dp))
             WhiteBoxValueColumn("IRONING", "Yes")
         }
         HorizontalDivider()
@@ -223,13 +218,15 @@ fun WhiteBoxValue(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Search location/Name")
                 Icon(
                     painter = painterResource(com.project.common_utils.R.drawable.search),
-                    contentDescription = "searchIcon"
+                    contentDescription = "searchIcon",
+                    modifier = Modifier.size(18.dp)
                 )
             }
             Button(
