@@ -16,4 +16,11 @@ object BankRoutes {
     // Transaction detail
     const val TXN_DETAIL = "bank/txn/{txnId}"
     fun txnDetail(txnId: String) = "bank/txn/$txnId"
+
+    // ✅ NEW: Send flow
+    const val SEND = "bank/send"
+    const val SEND_CONFIRM = "bank/send/confirm/{contactId}/{amountCents}"
+    const val SEND_SUCCESS = "bank/send/success"
+    fun sendConfirm(contactId: String, amountCents: Long) =
+        "bank/send/confirm/$contactId/$amountCents"
 }

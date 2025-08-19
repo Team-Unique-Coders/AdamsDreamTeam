@@ -25,8 +25,7 @@ fun FiltersScreen(
     initialCategories: Set<String> = emptySet(),
     onApply: (monthsRange: IntRange, categories: Set<String>) -> Unit,
     onClear: () -> Unit,
-    onBack: () -> Unit,
-    @DrawableRes illustrationRes: Int = com.example.bank.R.drawable.bankintro
+    onBack: () -> Unit
 ) {
     val brandOrange = Color(0xFFFF7A1A)
 
@@ -78,17 +77,6 @@ fun FiltersScreen(
                 .padding(horizontal = 20.dp)
         ) {
             Spacer(Modifier.height(8.dp))
-
-            // (Optional) header illustration
-            Image(
-                painter = painterResource(illustrationRes),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .padding(bottom = 4.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
 
             // Date / Year range
             Text("Date", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)

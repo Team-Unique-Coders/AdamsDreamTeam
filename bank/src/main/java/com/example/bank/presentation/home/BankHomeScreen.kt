@@ -1,6 +1,7 @@
 // file: com/example/bank/presentation/home/BankHomeScreen.kt
 package com.example.bank.presentation.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.bank.domain.model.Account
 import com.example.bank.domain.model.Transaction
 import com.example.bank.domain.model.TxnType
@@ -34,12 +37,14 @@ import java.util.*
 fun BankHomeScreen(
     accounts: List<Account> = emptyList(),
     transactions: List<Transaction> = emptyList(),
-    monthsRange: IntRange? = null,               // ← used now
-    selectedCategories: Set<String> = emptySet(),// ← NEW param
+    monthsRange: IntRange? = null,
+    selectedCategories: Set<String> = emptySet(),
     onClose: (() -> Unit)? = null,
     onOpenChecking: (() -> Unit)? = null,
     onOpenTransaction: ((String) -> Unit)? = null,
-    onOpenFilters: () -> Unit = {}
+    onOpenFilters: () -> Unit = {},
+    onOpenSend: () -> Unit = {},
+    onOpenRequest: () -> Unit = {}
 ) {
     val brandOrange = Color(0xFFFF7A1A)
     val creditGreen = Color(0xFF10C971)
@@ -67,7 +72,7 @@ fun BankHomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onOpenFilters) {           // ← open Filters
+                    IconButton(onClick = onOpenFilters) {
                         Icon(Icons.Filled.Tune, contentDescription = "Filter")
                     }
                 }
@@ -101,7 +106,6 @@ fun BankHomeScreen(
         val filtered = remember(transactions, tab, query, monthsRange, selectedCategories) {
             transactions
                 .asSequence()
-                // tab (All / Sent / Received)
                 .filter { t ->
                     when (tab) {
                         1 -> t.type == TxnType.DEBIT
@@ -109,11 +113,8 @@ fun BankHomeScreen(
                         else -> true
                     }
                 }
-                // search by counterparty
                 .filter { t -> query.isBlank() || t.counterparty.contains(query, ignoreCase = true) }
-                // months range (e.g., 6..12 where 12 = Now)
                 .filter { t -> monthsRange == null || tsInMonthsRange(t.timestampMs, monthsRange) }
-                // categories (map by counterparty → category label)
                 .filter { t ->
                     if (selectedCategories.isEmpty()) true
                     else {
@@ -130,11 +131,11 @@ fun BankHomeScreen(
                 .fillMaxSize()
                 .padding(inner)
         ) {
-            // Header: balance + avatar
+            // Header: balance + avatar (more vertical padding)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(Modifier.weight(1f)) {
@@ -146,6 +147,35 @@ fun BankHomeScreen(
                     Icon(Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(40.dp).padding(6.dp))
                 }
             }
+
+            // 🔶 Quick actions under the balance — centered, spaced, same shape as OrangeButton
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilledOrangeButton(
+                    text = "Send",
+                    onClick = onOpenSend,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(60.dp)
+                )
+                OutlinedOrangeButtonEqual(
+                    text = "Request",
+                    onClick = onOpenRequest,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(60.dp)
+                )
+            }
+
+
+
+            // Extra space before tabs → “push tabs down”
+            Spacer(Modifier.height(20.dp))
 
             // Tabs
             TabRow(
@@ -162,6 +192,9 @@ fun BankHomeScreen(
                 Tab(selected = tab == 1, onClick = { tab = 1 }) { Text("Sent", color = Color.Black, modifier = Modifier.padding(16.dp)) }
                 Tab(selected = tab == 2, onClick = { tab = 2 }) { Text("Received", color = Color.Black, modifier = Modifier.padding(16.dp)) }
             }
+
+            // More space under tabs as well so the area can breathe
+            Spacer(Modifier.height(8.dp))
 
             // Search
             OutlinedTextField(
@@ -229,7 +262,62 @@ fun BankHomeScreen(
     }
 }
 
-/* ---------- helpers ---------- */
+/* ---------- Local “outlined orange” button to match your OrangeButton ---------- */
+
+@Composable
+private fun FilledOrangeButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val brandOrange = Color(0xFFFF7A1A)
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .shadow(8.dp, shape = RoundedCornerShape(6.dp)),
+        shape = RoundedCornerShape(6.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 12.dp
+        ),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = brandOrange,
+            contentColor = Color.White
+        )
+    ) {
+        Text(text)
+    }
+}
+
+@Composable
+private fun OutlinedOrangeButtonEqual(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val brandOrange = Color(0xFFFF7A1A)
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .shadow(8.dp, shape = RoundedCornerShape(6.dp)),
+        shape = RoundedCornerShape(6.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 12.dp
+        ),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = brandOrange
+        ),
+        border = BorderStroke(1.dp, brandOrange)
+    ) {
+        Text(text)
+    }
+}
+
+
+
+/* ---------- helpers (unchanged) ---------- */
 
 private fun tsInMonthsRange(ts: Long, range: IntRange): Boolean {
     fun monthsBackToMs(m: Int): Long {
@@ -237,31 +325,21 @@ private fun tsInMonthsRange(ts: Long, range: IntRange): Boolean {
         c.add(Calendar.MONTH, -m.coerceAtLeast(0))
         return c.timeInMillis
     }
-    // Support reversed ranges and the “Now” sentinel (12) or 0
-    val far = maxOf(range.first, range.last)   // older bound (more months back)
-    val near = minOf(range.first, range.last)  // closer to now
-
-    val startMs = monthsBackToMs(far)          // earlier time
-    val endMs = if (near >= 12 || near <= 0) System.currentTimeMillis()
-    else monthsBackToMs(near)
-
+    val far = maxOf(range.first, range.last)
+    val near = minOf(range.first, range.last)
+    val startMs = monthsBackToMs(far)
+    val endMs = if (near >= 12 || near <= 0) System.currentTimeMillis() else monthsBackToMs(near)
     return ts in startMs..endMs
 }
 
 private fun categoryOf(counterparty: String): String? {
     val name = counterparty.lowercase(Locale.getDefault())
     return when {
-        // Transport
         listOf("uber","lyft","taxi","metro","bus").any { it in name } -> "Transport"
-        // Food
         listOf("burger","pizza","kfc","mcdonald","restaurant","cafe","coffee").any { it in name } -> "Food"
-        // Friends
         listOf("rebecca","franz","friend","moore","buddy").any { it in name } -> "Friends"
-        // Delivery
         listOf("delivery","courier","parcel").any { it in name } -> "Delivery"
-        // Hotel
         listOf("hotel","resort","inn","motel").any { it in name } -> "Hotel"
-        // Tutor / Services
         listOf("tutor","service","iclickipay","iclickigo","lavery","clean").any { it in name } -> "Services"
         else -> null
     }

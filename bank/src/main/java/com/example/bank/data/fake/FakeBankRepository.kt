@@ -6,17 +6,20 @@ import com.example.bank.domain.model.AccountType
 import com.example.bank.domain.model.Transaction
 import com.example.bank.domain.model.TxnStatus
 import com.example.bank.domain.model.TxnType
+import com.example.bank.domain.model.Contact
 import com.example.bank.domain.repository.BankRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class FakeBankRepository : BankRepository {
 
-    private val _accounts = MutableStateFlow<List<Account>>(emptyList())
-    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
+    private val _accounts       = MutableStateFlow<List<Account>>(emptyList())
+    private val _transactions   = MutableStateFlow<List<Transaction>>(emptyList())
+    private val _contacts       = MutableStateFlow<List<Contact>>(emptyList())
 
-    override fun accounts(): StateFlow<List<Account>> = _accounts
+    override fun accounts(): StateFlow<List<Account>>       = _accounts
     override fun transactions(): StateFlow<List<Transaction>> = _transactions
+    override fun contacts(): StateFlow<List<Contact>>       = _contacts   // ← NEW
 
     // deterministic base (Aug 15, 2025 12:00:00 UTC)
     private companion object {
@@ -28,12 +31,12 @@ class FakeBankRepository : BankRepository {
     override suspend fun seedDemoData() {
         if (_accounts.value.isNotEmpty()) return // idempotent
 
-        // Fixed IDs & masked numbers for stability
+        // --- Accounts (fixed ids) ---
         val checking = Account(
             id = "acc_checking",
             name = "Everyday Checking",
             type = AccountType.CHECKING,
-            balance = 0.0,                    // will be computed below
+            balance = 0.0,
             currency = "USD",
             maskedNumber = "•••• 1234"
         )
@@ -41,19 +44,30 @@ class FakeBankRepository : BankRepository {
             id = "acc_savings",
             name = "Rainy Day Savings",
             type = AccountType.SAVINGS,
-            balance = 0.0,                    // will be computed below
+            balance = 0.0,
             currency = "USD",
             maskedNumber = "•••• 5678"
         )
         _accounts.value = listOf(checking, savings)
 
-        // Start balances (so totals look realistic)
+        // --- Contacts (fixed ids & order) ---
+        _contacts.value = listOf(
+            Contact(id = "c_rebecca", name = "Rebecca Moore",   email = "rebecca@gmail.com",    phone = "5551001"),
+            Contact(id = "c_franz",   name = "Franz Ferdinand", email = "franz@mail.com",       phone = "5551002"),
+            Contact(id = "c_buddy",   name = "My Buddyz",       email = null,                   phone = "5551003"),
+            Contact(id = "c_burger",  name = "Burger Delivery", email = "support@burger.com",   phone = null),
+            Contact(id = "c_alice",   name = "Alice Park",      email = "alice@park.co",        phone = "5551010"),
+            Contact(id = "c_david",   name = "David Jones",     email = null,                   phone = "5551011"),
+            Contact(id = "c_uber",    name = "Uber",            email = "help@uber.com",        phone = null),
+            Contact(id = "c_spotify", name = "Spotify",         email = "support@spotify.com",  phone = null)
+        )
+
+        // --- Start balances so totals look real ---
         val startChecking = 2000.00
         val startSavings  = 1200.00
 
-        // Deterministic transactions (newest → oldest via larger → smaller timestamps)
+        // --- Transactions (deterministic timestamps, newest → oldest) ---
         val seeded = listOf(
-            // Checking — today-ish
             Transaction(
                 id = "txn_rebecca",
                 accountId = checking.id,
@@ -76,7 +90,6 @@ class FakeBankRepository : BankRepository {
                 status = TxnStatus.POSTED,
                 note = null
             ),
-            // Checking — yesterday-ish (two credits + one small debit)
             Transaction(
                 id = "txn_franz_1",
                 accountId = checking.id,
@@ -110,7 +123,6 @@ class FakeBankRepository : BankRepository {
                 status = TxnStatus.POSTED,
                 note = null
             ),
-            // Savings — two days ago (one credit)
             Transaction(
                 id = "txn_savings_refund",
                 accountId = savings.id,
@@ -123,11 +135,9 @@ class FakeBankRepository : BankRepository {
                 note = null
             )
         )
-
-        // Set transactions sorted by timestamp desc
         _transactions.value = seeded.sortedByDescending { it.timestampMs }
 
-        // Compute balances = starting + net(txns)
+        // --- Compute balances once from start + net(txns) ---
         val netChecking = _transactions.value
             .filter { it.accountId == checking.id }
             .sumOf { if (it.type == TxnType.CREDIT) it.amount else -it.amount }
@@ -141,12 +151,10 @@ class FakeBankRepository : BankRepository {
         )
     }
 
-    /** Ensure there is a checking account. Returns its id. */
     override suspend fun openCheckingAccount(): String {
         val existing = _accounts.value.firstOrNull { it.type == AccountType.CHECKING }
         if (existing != null) return existing.id
 
-        // If not present (e.g., you skipped seed), create a deterministic checking account
         val id = "acc_checking"
         val checking = Account(
             id = id,
@@ -158,7 +166,7 @@ class FakeBankRepository : BankRepository {
         )
         _accounts.value = _accounts.value + checking
 
-        // Add a couple of deterministic starter txns relative to BASE_MS
+        // starter txns (still deterministic)
         addInternal(
             Transaction(
                 id = "txn_rebecca",
@@ -185,11 +193,9 @@ class FakeBankRepository : BankRepository {
                 note = null
             )
         )
-
         return id
     }
 
-    /** Add a new transaction "now" (user action). */
     override suspend fun addTransaction(
         accountId: String,
         type: TxnType,
@@ -217,13 +223,10 @@ class FakeBankRepository : BankRepository {
 
     // ---- helpers ----
 
-    /** Insert txn, keep list sorted, and update the account balance incrementally (no reset). */
     private fun addInternal(txn: Transaction) {
-        // insert/replace by id, keep sorted desc
         _transactions.value = (_transactions.value.filterNot { it.id == txn.id } + txn)
             .sortedByDescending { it.timestampMs }
 
-        // incremental balance update on its account
         _accounts.value = _accounts.value.map { acc ->
             if (acc.id == txn.accountId) {
                 val delta = if (txn.type == TxnType.CREDIT) txn.amount else -txn.amount
