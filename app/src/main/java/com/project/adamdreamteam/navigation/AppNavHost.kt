@@ -27,14 +27,19 @@ import com.example.chat.entry.ChatEntry
 import com.example.handyman.navigation.HandymanNavEntry
 import com.example.learn.navigation.LearnNavEntry
 import com.example.mechanic.navigation.MechanicNavEntry
+
+import com.project.adamdreamteam.R as AppR
+
+
 import com.example.tinder.ui.LoopingMusicButton
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,
@@ -85,7 +90,9 @@ fun AppNavHost(
         }
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
-        composable(Routes.HANDYMAN) { HandymanNavEntry() }
+        composable(Routes.HANDYMAN) {
+            HandymanNavEntry()
+        }
         composable(Routes.MECHANIC) { MechanicNavEntry() }
 
 
