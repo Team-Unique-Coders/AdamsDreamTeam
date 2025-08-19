@@ -29,7 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.project.common_utils.R
 import com.project.common_utils.components.BackArrowIcon
+import com.project.common_utils.components.ButtonIcon
 import com.project.common_utils.components.OrangeButton
 
 @Composable
@@ -50,10 +52,11 @@ fun LearnFormScreen(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BackArrowIcon(onClick = onBack)
+            //BackArrowIcon(onClick = onBack)
+            ButtonIcon(R.drawable.home, onClick = onBack)
             Spacer(Modifier.width(12.dp))
             Text(
-                text = "Your tutor",
+                text = "Your teacher",
                 style = MaterialTheme.typography.titleLarge
             )
         }
@@ -82,41 +85,6 @@ fun LearnFormScreen(
         )
 
         Spacer(Modifier.height(24.dp))
-
-        Text(text = "Availability", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-
-        var sliderPosition by remember { mutableFloatStateOf(14f) }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Slider(
-                value = sliderPosition,
-                onValueChange = { sliderPosition = it },
-                colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.secondary,
-                    activeTrackColor = MaterialTheme.colorScheme.secondary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                ),
-                steps = 3,
-                valueRange = 8f..20f
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("8")
-                Text("11")
-                Text("14")
-                Text("17")
-                Text("20")
-            }
-        }
 
         Spacer(modifier = Modifier.weight(1f))
 
