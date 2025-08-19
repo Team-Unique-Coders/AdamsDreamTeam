@@ -2,8 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt)   // <-- REQUIRED
-    alias(libs.plugins.ksp)
 }
 
 android {
@@ -45,9 +43,13 @@ dependencies {
 
     implementation(project(":bank"))
     implementation(project(":chat"))
+    implementation(project(":learn"))
+    implementation(project(":common_utils"))
+    implementation(project(":laundry"))
     implementation(project(":mechanic"))
     implementation(project(":handyman"))
 
+    implementation(project(":tinder"))
     implementation("io.coil-kt:coil-compose:2.6.0")
 
 
@@ -60,8 +62,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(project(":common_utils"))
-    implementation(project(":learn"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -69,9 +69,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.androidx.compose.material.icons.extended)
 
 }

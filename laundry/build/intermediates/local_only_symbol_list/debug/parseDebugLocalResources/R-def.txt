@@ -1,0 +1,12 @@
+R_DEF: Internal format may change without notice
+local
+drawable card
+drawable ellipse
+drawable ellipse_1
+drawable ellipse_2
+drawable group_2
+drawable location
+drawable maskgroup
+drawable order
+drawable route
+drawable vector

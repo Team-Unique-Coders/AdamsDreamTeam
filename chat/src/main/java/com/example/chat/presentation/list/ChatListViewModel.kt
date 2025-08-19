@@ -6,7 +6,10 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.chat.domain.model.ChatSummary
 import com.example.chat.domain.repository.ChatRepository
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class ChatListUiState(
@@ -15,27 +18,28 @@ data class ChatListUiState(
 )
 
 class ChatListViewModel(private val repo: ChatRepository) : ViewModel() {
-    private val _state = MutableStateFlow(ChatListUiState())
-    val state: StateFlow<ChatListUiState> = _state.asStateFlow()
 
-    init {
-        viewModelScope.launch {
-            repo.chats()
-                .onStart { _state.update { it.copy(isLoading = true) } }
-                .collect { list -> _state.value = ChatListUiState(list, isLoading = false) }
+    // Single source of truth: newest-first ordering
+    val state: StateFlow<ChatListUiState> = repo.chats()
+        .map { list ->
+            ChatListUiState(
+                chats = list.sortedByDescending { it.lastTimestamp },
+                isLoading = false
+            )
         }
-    }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            ChatListUiState(isLoading = true)
+        )
 
     fun deleteChat(chatId: String) {
-        viewModelScope.launch {
-            repo.deleteChat(chatId)
-        }
+        viewModelScope.launch { repo.deleteChat(chatId) }
     }
 
     companion object {
-        fun factory(repo: com.example.chat.domain.repository.ChatRepository) =
-            viewModelFactory {
-                initializer { ChatListViewModel(repo) }
-            }
+        fun factory(repo: ChatRepository) = viewModelFactory {
+            initializer { ChatListViewModel(repo) }
+        }
     }
 }

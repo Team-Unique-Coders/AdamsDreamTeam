@@ -9,10 +9,11 @@ object Routes {
     const val LEARN = "learn"
     const val CHAT = "chat"
     const val DOCTOR = "doctor"
-    const val LAUNDRY = "laundry"
+    const val LAUNDRY = "laundry_entry"
     const val EAT = "eat"
     const val HOTEL = "hotel"
     const val HANDYMAN = "handyman"
     const val MECHANIC = "mechanic"
     const val BANK = "bank"
+
 }
