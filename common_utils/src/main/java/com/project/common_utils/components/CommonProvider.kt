@@ -5,7 +5,7 @@ import com.project.common_utils.IconTextModel
 import com.project.common_utils.R
 import com.project.common_utils.TextSpacerTextModel
 
-data class Provider(
+data class CommonProvider(
     val name: String,
     val rating: Double,
     val distanceMiles: Double,
@@ -19,13 +19,13 @@ data class Provider(
     val about: String = "Friendly professional with fast turnaround and great quality."
 )
 
-val fake = listOf(
-    Provider(
+val commonFake = listOf(
+    CommonProvider(
         "Jenny Jones", 4.8, 4.5, "$ 15/kg",
         R.drawable.profiled,
         -6.396, 106.823, "28 Broad Street, Johannesburg"
     ),
-    Provider(
+    CommonProvider(
         "Sacha Down", 4.8, 4.5, "$ 13/kg",
         R.drawable.profiled,
         -6.394, 106.820, "15 Orchard Rd, Johannesburg"
@@ -33,7 +33,7 @@ val fake = listOf(
 )
 
 val fakeLaundry = listOf(
-    Provider(
+    CommonProvider(
         "Jenny Jones", 4.8, 4.5, "$ 15/kg",
         R.drawable.profiled,
         -6.396, 106.823, "28 Broad Street, Johannesburg",
@@ -44,7 +44,7 @@ val fakeLaundry = listOf(
         ),
 
         ),
-    Provider(
+    CommonProvider(
         "Sacha Down", 4.8, 4.5, "$ 13/kg",
         R.drawable.profiled,
         -6.394, 106.820, "15 Orchard Rd, Johannesburg",
@@ -57,7 +57,7 @@ val fakeLaundry = listOf(
 )
 
 val fakeLearning = listOf(
-    Provider(
+    CommonProvider(
         "Jenny Jones", 4.8, 4.5, "$ 15/kg",
         R.drawable.profiled,
         -6.396, 106.823, "28 Broad Street, Johannesburg",
@@ -66,7 +66,7 @@ val fakeLearning = listOf(
             IconTextModel("📊", listOf("Elementary", "College"))
         )
     ),
-    Provider(
+    CommonProvider(
         "Sacha Down", 4.8, 4.5, "$ 13/kg",
         R.drawable.profiled,
         -6.394, 106.820, "15 Orchard Rd, Johannesburg",
@@ -78,7 +78,7 @@ val fakeLearning = listOf(
 )
 
 val fakeHandyman = listOf(
-    Provider(
+    CommonProvider(
         "Jenny Jones", 4.8, 4.5, "$ 15/kg",
         R.drawable.profiled,
         -6.396, 106.823, "28 Broad Street, Johannesburg",
@@ -86,7 +86,7 @@ val fakeHandyman = listOf(
             IconTextModel("🔧", listOf("Plumber", "Carpenter")),
         )
     ),
-    Provider(
+    CommonProvider(
         "Sacha Down", 4.8, 4.5, "$ 13/kg",
         R.drawable.profiled,
         -6.394, 106.820, "15 Orchard Rd, Johannesburg",
@@ -97,7 +97,7 @@ val fakeHandyman = listOf(
 )
 
 val fakeMechanic = listOf(
-    Provider(
+    CommonProvider(
         "Jenny Jones", 4.8, 4.5, "$ 15/kg",
         R.drawable.profiled,
         -6.396, 106.823, "28 Broad Street, Johannesburg",
@@ -105,7 +105,7 @@ val fakeMechanic = listOf(
             IconTextModel("⚙️", listOf("Car", "Motorcycle"))
         )
     ),
-    Provider(
+    CommonProvider(
         "Sacha Down", 4.8, 4.5, "$ 13/kg",
         R.drawable.profiled,
         -6.394, 106.820, "15 Orchard Rd, Johannesburg",
