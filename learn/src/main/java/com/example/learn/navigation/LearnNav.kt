@@ -30,17 +30,20 @@ private object LearnRoutes {
 }
 
 @Composable
-fun LearnNavEntry(externalNav: NavHostController? = null) {
+fun LearnNavEntry(externalNav: NavHostController? = null, onClose: () -> Unit) {
     val nav = rememberNavController()
 
     NavHost(navController = nav, startDestination = LearnRoutes.Welcome) {
         composable(LearnRoutes.Welcome) {
-            LearnWelcomeScreen(onLetsGo = { nav.navigate(LearnRoutes.List) })
+            LearnWelcomeScreen(
+                onLetsGo = { nav.navigate(LearnRoutes.Form) },
+                onBack =  onClose
+            )
         }
         composable(LearnRoutes.Form) {
             LearnFormScreen(
                 onNext = { nav.navigate(LearnRoutes.List) },
-                onBack = { nav.popBackStack() }
+                onBack = onClose
             )
         }
         composable(LearnRoutes.List) {
