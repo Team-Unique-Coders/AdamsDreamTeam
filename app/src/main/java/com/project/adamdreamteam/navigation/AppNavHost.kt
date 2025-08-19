@@ -83,7 +83,14 @@ fun AppNavHost(
             )
         }
 
-        composable(Routes.DOCTOR) { DoctorEntry()}
+        composable(Routes.DOCTOR) {
+            DoctorEntry(onClose = {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.HOME) { inclusive = false }
+                    launchSingleTop = true
+                }
+            })
+        }
         addLaundryGraph(
             nav = navController,
             onOpen = { route -> navController.navigate(route) }
