@@ -18,6 +18,10 @@ osmdroid = "0.0.12"
 roomCommonJvm = "2.7.2"
 roomRuntimeAndroid = "2.7.2"
 navigationComposeJvmstubs = "2.9.3"
+roomCompiler = "2.7.2"
+cameraCore = "1.4.2"
+navigationRuntimeAndroid = "2.9.3"
+navigationComposeAndroid = "2.9.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +58,10 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 # OpenStreetMap (Map.kt)
 osmdroid-compose = { module = "com.github.utsmannn:osmandcompose", version.ref = "osmdroid" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }
+androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
+androidx-navigation-compose-android = { group = "androidx.navigation", name = "navigation-compose-android", version.ref = "navigationComposeAndroid" }
 
 
 

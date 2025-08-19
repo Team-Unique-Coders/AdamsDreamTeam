@@ -30,11 +30,7 @@ fun LaundryScreen(
     val screenHeight = configuration.screenHeightDp.dp
 
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onOpen("home") }) { // <- change "home" if needed
-                Icon(Icons.Filled.Home, contentDescription = "Go to Home")
-            }
-        }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier

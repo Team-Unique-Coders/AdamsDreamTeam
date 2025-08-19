@@ -18,7 +18,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
 import com.example.tinder.nav.AppNavigation
-import com.example.tinder.ui.RainEffectController
 import com.example.bank.entry.BankEntry
 import com.example.chat.entry.ChatEntry
 import com.example.mechanic.navigation.MechanicNavEntry
@@ -32,14 +31,19 @@ import com.example.chat.entry.ChatEntry
 import com.example.handyman.navigation.HandymanNavEntry
 import com.example.learn.navigation.LearnNavEntry
 import com.example.mechanic.navigation.MechanicNavEntry
-import com.example.tinder.ui.LoopingMusicButton
+import com.example.doctor.navigation.DoctorEntry
+
+import com.project.adamdreamteam.R as AppR
+import com.example.tinder.ui.animation.LoopingMusicButton
+import com.example.tinder.ui.animation.RainEffectController
+import com.example.uber.nav.UberNavigation
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
@@ -51,7 +55,7 @@ fun AppNavHost(
             HomePage(onOpen = { route -> navController.navigate(route) })
         }
 
-        composable(Routes.UBER) { StubScreen("Uber") }
+        composable(Routes.UBER) { UberNavigation()}
 
         composable(Routes.TINDER) {
             LoopingMusicButton()
@@ -81,8 +85,15 @@ fun AppNavHost(
                 }
             )
         }
-        composable(Routes.DOCTOR) { StubScreen("Doctor") }
 
+        composable(Routes.DOCTOR) {
+            DoctorEntry(onClose = {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.HOME) { inclusive = false }
+                    launchSingleTop = true
+                }
+            })
+        }
         addLaundryGraph(
             nav = navController,
             onOpen = { route -> navController.navigate(route) }

@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.laundry.data.LaundryOptions
 import com.example.laundry.data.Provider
+import com.project.common_utils.components.OrangeButton
 import com.project.common_utils.components.RangeSliderComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,9 +83,11 @@ fun YourLaundryScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(16.dp),
+                 contentAlignment = Alignment.Center
+
             ) {
-                Button(
+                OrangeButton(
                     onClick = {
                         val options = LaundryOptions(
                             kg = kgRange.endInclusive.toInt(),
@@ -95,14 +98,8 @@ fun YourLaundryScreen(
                         )
                         onConfirmOptions(options) // nav layer will save & call onOpen(ORDER route)
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFF9800),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("Next", modifier = Modifier.padding(horizontal = 70.dp))
-                }
+                   "Next"
+                )
             }
         }
     ) { paddingValues ->

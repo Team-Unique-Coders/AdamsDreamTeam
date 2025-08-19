@@ -48,6 +48,7 @@ dependencies {
     implementation(project(":laundry"))
     implementation(project(":mechanic"))
     implementation(project(":handyman"))
+    implementation(project(":uber"))
 
     implementation(project(":tinder"))
     implementation("io.coil-kt:coil-compose:2.6.0")
@@ -62,6 +63,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    implementation(project(":doctor"))
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,5 +75,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.navigation.compose)
+
+    implementation("org.osmdroid:osmdroid-android:6.1.16")
 
 }

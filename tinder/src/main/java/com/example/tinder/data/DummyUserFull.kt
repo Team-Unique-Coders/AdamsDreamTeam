@@ -5,12 +5,13 @@ data class DummyUserFull(
     val name: String,
     val age: Int,
     val city: String,
-    val photo: Int,
+    val photoUris: List<PhotoSource>,
     val aboutMe: String,
-    val description: String,
     val dateOfBirth: Int,
-    val createdTime: String,
-    val boosts: Int,
+    val lastActive: String,
     val likes: Int,
-    val superLikes: Int
+    val superLikes: Int,
+    val boosts: Int
 )
+
+
