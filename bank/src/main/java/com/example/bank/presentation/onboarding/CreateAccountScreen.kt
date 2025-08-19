@@ -1,6 +1,10 @@
+// file: com/example/bank/presentation/onboarding/CreateAccountScreen.kt
 package com.example.bank.presentation.onboarding
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -8,7 +12,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.text.KeyboardOptions          // ← correct package
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -19,16 +24,19 @@ import com.project.common_utils.components.OrangeButton
 @Composable
 fun CreateAccountScreen(
     onBack: () -> Unit,
-    onSubmit: (fullName: String, contact: String, pin: String) -> Unit
+    onSubmit: (fullName: String, contact: String, pin: String) -> Unit,
+    @DrawableRes illustrationRes: Int = com.example.bank.R.drawable.createimg // use your existing asset
 ) {
-    var fullName by rememberSaveable { mutableStateOf("") }
-    var contact by rememberSaveable { mutableStateOf("") }
-    var pin by rememberSaveable { mutableStateOf("") }
-    var pin2 by rememberSaveable { mutableStateOf("") }
+    val brandOrange = Color(0xFFFF7A1A)
 
-    var nameErr by rememberSaveable { mutableStateOf<String?>(null) }
+    var fullName by rememberSaveable { mutableStateOf("") }
+    var contact  by rememberSaveable { mutableStateOf("") }
+    var pin      by rememberSaveable { mutableStateOf("") }
+    var pin2     by rememberSaveable { mutableStateOf("") }
+
+    var nameErr    by rememberSaveable { mutableStateOf<String?>(null) }
     var contactErr by rememberSaveable { mutableStateOf<String?>(null) }
-    var pinErr by rememberSaveable { mutableStateOf<String?>(null) }
+    var pinErr     by rememberSaveable { mutableStateOf<String?>(null) }
 
     fun validate(): Boolean {
         nameErr = if (fullName.isBlank()) "Please enter your name" else null
@@ -46,9 +54,16 @@ fun CreateAccountScreen(
     }
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
                 title = { Text("Create account") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White,
+                    navigationIconContentColor = Color.Black,
+                    titleContentColor = Color.Black,
+                    actionIconContentColor = Color.Black
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -62,10 +77,21 @@ fun CreateAccountScreen(
                 .fillMaxSize()
                 .padding(inner)
                 .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(8.dp))
+            // Header illustration – on-brand, occupies visual space
+            Spacer(Modifier.height(4.dp))
+            Image(
+                painter = painterResource(illustrationRes),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .padding(top = 4.dp, bottom = 8.dp)
+            )
 
+            // Form
             OutlinedTextField(
                 value = fullName,
                 onValueChange = {
@@ -77,7 +103,15 @@ fun CreateAccountScreen(
                 isError = nameErr != null,
                 supportingText = { if (nameErr != null) Text(nameErr!!) },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = brandOrange,
+                    unfocusedIndicatorColor = Color(0xFFE6E6E6),
+                    cursorColor = Color.Black
+                )
             )
 
             OutlinedTextField(
@@ -94,6 +128,14 @@ fun CreateAccountScreen(
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
+                ),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = brandOrange,
+                    unfocusedIndicatorColor = Color(0xFFE6E6E6),
+                    cursorColor = Color.Black
                 )
             )
 
@@ -112,6 +154,14 @@ fun CreateAccountScreen(
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.NumberPassword,
                     imeAction = ImeAction.Next
+                ),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = brandOrange,
+                    unfocusedIndicatorColor = Color(0xFFE6E6E6),
+                    cursorColor = Color.Black
                 )
             )
 
@@ -128,11 +178,20 @@ fun CreateAccountScreen(
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.NumberPassword,
                     imeAction = ImeAction.Done
+                ),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = brandOrange,
+                    unfocusedIndicatorColor = Color(0xFFE6E6E6),
+                    cursorColor = Color.Black
                 )
             )
 
             Spacer(Modifier.weight(1f))
 
+            // On-brand action button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
