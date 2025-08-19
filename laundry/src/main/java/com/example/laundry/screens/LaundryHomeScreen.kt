@@ -1,6 +1,7 @@
 package com.example.laundry.screens
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,7 +47,11 @@ fun LaundryHomeScreen(
     providers: List<Provider>,
     onOpen: (String) -> Unit = {},
     onBack: () -> Unit = {},
+
 ) {
+    BackHandler {
+        onBack()   // delegate to navigation layer
+    }
     Scaffold(
     ) { paddingValues ->
         LazyColumn(

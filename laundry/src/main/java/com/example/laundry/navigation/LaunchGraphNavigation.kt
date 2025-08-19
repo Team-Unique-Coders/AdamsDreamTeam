@@ -76,7 +76,8 @@ fun graphViewModel(nav: NavHostController): LaundryViewModel {
 @RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.addLaundryGraph(
     nav: NavHostController,
-    onOpen: (String) -> Unit = { route -> nav.navigate(route) }, // default: use the same controller
+    onOpen: (String) -> Unit = { route -> nav.navigate(route) },
+    onClose: () -> Unit// default: use the same controller
 ) {
     navigation(
         startDestination = LaundryDestinations.LIST,
@@ -92,7 +93,7 @@ fun NavGraphBuilder.addLaundryGraph(
             LaundryHomeScreen(
                 providers = providers,
                 onOpen = onOpen,
-                onBack = { nav.popBackStack() }
+                onBack = onClose
             )
         }
 

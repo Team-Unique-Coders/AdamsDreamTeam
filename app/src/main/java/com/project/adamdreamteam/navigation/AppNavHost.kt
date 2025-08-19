@@ -96,7 +96,13 @@ fun AppNavHost(
         }
         addLaundryGraph(
             nav = navController,
-            onOpen = { route -> navController.navigate(route) }
+            onOpen = { route -> navController.navigate(route) },
+            onClose = {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.HOME) { inclusive = false }
+                    launchSingleTop = true
+                }
+            },
         )
 
         // 2) Laundry ENTRY route (unique) -> redirects to nested graph, then pops itself
