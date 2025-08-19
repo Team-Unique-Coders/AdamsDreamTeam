@@ -1,24 +1,19 @@
 package com.example.handyman.navigation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.handyman.ui.HandymanFormScreen
-import com.example.handyman.ui.HandymanWelcomeScreen
-import com.example.handyman.ui.OrderCheckoutScreen
-import com.example.handyman.ui.ProviderListScreen
-import com.example.handyman.ui.ProviderProfileScreen
-import com.example.handyman.ui.FiltersScreen
-import com.example.handyman.ui.FiltersState
-import com.example.handyman.ui.ScheduleScreen
-import com.example.handyman.ui.SuccessScreen
+import com.example.handyman.ui.*
+import com.example.handyman.R as HmR
 
-/** Public route name (if the app wants to refer to this feature) */
+
+/** Public route other modules can reference */
 const val HandymanRootRoute = "handyman_root"
 
-/** Internal routes for pages inside this feature */
+/** Internal routes for this feature */
 private object HmRoutes {
     const val Welcome  = "hm_welcome"
     const val Form     = "hm_form"
@@ -28,15 +23,15 @@ private object HmRoutes {
     const val Checkout = "hm_checkout"
     const val Filters  = "hm_filters"
     const val Success  = "hm_success"
+    const val Map      = "hm_map"
 }
 
-/**
- * Entry composable for the Handyman feature.
- * Central app can just show this composable and the rest of the flow stays inside.
- */
+/** Entry composable for the Handyman feature */
 @Composable
 fun HandymanNavEntry(
-    externalNav: NavHostController? = null // (reserved for future use)
+    externalNav: NavHostController? = null,   // reserved (not used now)
+    @DrawableRes heroResId: Int? = null,      // welcome/hero image
+    @DrawableRes listBannerResId: Int? = null // optional list header image
 ) {
     val nav = rememberNavController()
 
@@ -46,7 +41,9 @@ fun HandymanNavEntry(
     ) {
         composable(HmRoutes.Welcome) {
             HandymanWelcomeScreen(
-                onLetsGo = { nav.navigate(HmRoutes.Form) }
+                onLetsGo = { nav.navigate(HmRoutes.Form) },
+                onBack = { nav.popBackStack() },
+                heroResId = heroResId ?: HmR.drawable.handyman_hero
             )
         }
 
@@ -57,64 +54,68 @@ fun HandymanNavEntry(
             )
         }
 
+        // LIST
         composable(HmRoutes.List) {
-            // Read filters passed back from FiltersScreen via SavedStateHandle
-            val filters = nav.currentBackStackEntry
-                ?.savedStateHandle
-                ?.get<FiltersState>("filters")
-
             ProviderListScreen(
                 onBack = { nav.popBackStack() },
-                onOpenProvider = { /* item -> */ nav.navigate(HmRoutes.Profile) },
+                onOpenProvider = { nav.navigate(HmRoutes.Profile) },
                 onOpenFilters  = { nav.navigate(HmRoutes.Filters) },
-                filters = filters // <-- pass to list screen
+                onOpenMap      = { nav.navigate(HmRoutes.Map) }
             )
         }
 
+        // MAP
+        composable(HmRoutes.Map) {
+            MapScreen(
+                onBack = { nav.popBackStack() },
+                onOpenList = {
+                    // If List is underneath, just pop to it; otherwise navigate to it.
+                    val popped = nav.popBackStack(HmRoutes.List, inclusive = false)
+                    if (!popped) nav.navigate(HmRoutes.List)
+                },
+                onOpenProvider = { nav.navigate(HmRoutes.Profile) }   // ← tap mini card -> profile
+            )
+        }
+
+        // PROFILE
         composable(HmRoutes.Profile) {
             ProviderProfileScreen(
                 onBack = { nav.popBackStack() },
-                onTakeAppointment = { nav.navigate(HmRoutes.Schedule) } // go to time picker
+                onTakeAppointment = { nav.navigate(HmRoutes.Schedule) }
             )
         }
 
+        // SCHEDULE
         composable(HmRoutes.Schedule) {
             ScheduleScreen(
                 onBack = { nav.popBackStack() },
-                onConfirm = { _, _ ->
-                    // You can stash date/time in a VM via SavedStateHandle later.
-                    nav.navigate(HmRoutes.Checkout)
-                }
+                onConfirm = { _, _ -> nav.navigate(HmRoutes.Checkout) }
             )
         }
 
+        // CHECKOUT
         composable(HmRoutes.Checkout) {
             OrderCheckoutScreen(
                 onBack = { nav.popBackStack() },
-                onPlaceOrder = {
-                    // Go to success page
-                    nav.navigate(HmRoutes.Success)
-                }
+                onPlaceOrder = { nav.navigate(HmRoutes.Success) }
             )
         }
 
+        // SUCCESS
         composable(HmRoutes.Success) {
             SuccessScreen(
-                onGoHome = {
-                    // Pop back to the start of this feature flow
-                    nav.popBackStack(HmRoutes.Welcome, inclusive = false)
-                }
+                onGoHome = { nav.popBackStack(HmRoutes.Welcome, inclusive = false) }
             )
         }
 
+        // FILTERS
         composable(HmRoutes.Filters) {
             FiltersScreen(
                 onBack = { nav.popBackStack() },
-                onApply = { filters: FiltersState ->
-                    // Pass filters back to the previous (List) destination
+                onApply = { newFilters ->
                     nav.previousBackStackEntry
                         ?.savedStateHandle
-                        ?.set("filters", filters)
+                        ?.set("filters", newFilters)
                     nav.popBackStack()
                 }
             )

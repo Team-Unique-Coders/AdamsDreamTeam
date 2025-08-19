@@ -19,8 +19,13 @@ import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
 import com.example.tinder.nav.AppNavigation
 import com.example.tinder.ui.RainEffectController
+import com.example.bank.entry.BankEntry
+import com.example.chat.entry.ChatEntry
+import com.example.mechanic.navigation.MechanicNavEntry
+import com.example.handyman.navigation.HandymanNavEntry
 import com.example.laundry.navigation.LaundryFeatureEntry
 import com.example.laundry.navigation.addLaundryGraph
+import com.example.learn.navigation.LearnNavEntry
 import com.project.adamdreamteam.ui.home.HomePage
 import androidx.navigation.compose.rememberNavController
 import com.example.chat.entry.ChatEntry
@@ -34,7 +39,7 @@ import com.example.tinder.ui.LoopingMusicButton
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,
@@ -58,7 +63,14 @@ fun AppNavHost(
         }
 
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
-        composable(Routes.LEARN) { LearnNavEntry() }
+        composable(Routes.LEARN) {
+            LearnNavEntry(onClose = {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.HOME) { inclusive = false }
+                    launchSingleTop = true
+                }
+            })
+        }
         composable(Routes.CHAT) {
             ChatEntry(
                 onClose = {
@@ -70,6 +82,7 @@ fun AppNavHost(
             )
         }
         composable(Routes.DOCTOR) { StubScreen("Doctor") }
+
         addLaundryGraph(
             nav = navController,
             onOpen = { route -> navController.navigate(route) }
@@ -83,15 +96,18 @@ fun AppNavHost(
                 selfRoute = Routes.LAUNDRY
             )
         }
+
         composable(Routes.EAT) { StubScreen("Eat") }
         composable(Routes.HOTEL) { StubScreen("Hotel") }
-        composable(Routes.HANDYMAN) { HandymanNavEntry() }
+        composable(Routes.HANDYMAN) {
+            HandymanNavEntry()
+        }
         composable(Routes.MECHANIC) { MechanicNavEntry() }
 
 
         composable(Routes.BANK) {
-            BankScreen(
-                onBackToHome = {
+            BankEntry(
+                onClose = {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.HOME) { inclusive = false }
                         launchSingleTop = true
@@ -99,6 +115,7 @@ fun AppNavHost(
                 }
             )
         }
+
     }
 }
 

@@ -2,7 +2,6 @@ package com.project.adamdreamteam.navigation
 
 object Routes {
     const val HOME = "home"
-
     // one per feature (matches your modules)
     const val UBER = "uber"
     const val TINDER = "tinder"

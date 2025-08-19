@@ -1,125 +1,215 @@
 package com.example.handyman.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.project.common_utils.ThreeValueSlider
-
-// Use the standalone model in FiltersState.kt
-import com.example.handyman.ui.FiltersState
+import androidx.compose.ui.window.PopupProperties
 import com.project.common_utils.components.BackArrowIcon
-import com.project.common_utils.components.OrangeButton
 import com.project.common_utils.components.ReviewStars
 
+//  Bright vivid orange (mockup style)
+private val Orange = Color(0xFFFF7A00)
+private val DividerGrey = Color(0xFFE7E8EB)
+private val LabelGrey = Color(0xFF9AA0A6)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FiltersScreen(
     onBack: () -> Unit,
     onApply: (FiltersState) -> Unit
 ) {
-    var price by remember { mutableStateOf(15f) }        // $/h
-    var rating by remember { mutableStateOf(4.0f) }      // stars
-    var distance by remember { mutableStateOf(500f) }    // meters
-    var plumber by remember { mutableStateOf(true) }
-    var electrician by remember { mutableStateOf(false) }
-    var carpenter by remember { mutableStateOf(false) }
-    var painter by remember { mutableStateOf(false) }
+    var sort by remember { mutableStateOf("Recommend") }
+    var expanded by remember { mutableStateOf(false) }
+    var price by remember { mutableFloatStateOf(30f) }   // 0..60
+    var rating by remember { mutableFloatStateOf(4.5f) } // show half like mock
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(Color.White)
+            .padding(horizontal = 16.dp)
     ) {
-        // Top bar
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            BackArrowIcon(onClick = onBack)
-            Spacer(Modifier.width(12.dp))
-            Text("Filters", style = MaterialTheme.typography.titleLarge)
+        /* ---------- Top bar (back | centered title | Clear) ---------- */
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 8.dp)
+                .height(40.dp)
+        ) {
+            Row(
+                modifier = Modifier.matchParentSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                BackArrowIcon(onClick = onBack, tint = Orange)
+                Spacer(Modifier.width(1.dp)) // keeps Row balanced
+                Text(
+                    "Clear",
+                    color = Orange,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                    modifier = Modifier.clickable {
+                        sort = "Recommend"
+                        price = 30f
+                        rating = 4.5f
+                    }
+                )
+            }
+            Text(
+                "Filters",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = Color(0xFF30313A),
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
 
-        Spacer(Modifier.height(16.dp))
+        /* ---------- Sort by (card-like field) ---------- */
+        Text("Sort by", color = LabelGrey, style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(6.dp))
 
-        // Price/hour
-        Text("Price per hour", style = MaterialTheme.typography.titleMedium)
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            @Suppress("DEPRECATION")
+            OutlinedTextField(
+                value = sort,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(10.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = DividerGrey,
+                    unfocusedBorderColor = DividerGrey,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                )
+            )
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                properties = PopupProperties(focusable = false)
+            ) {
+                listOf("Recommend", "Rating", "Price low → high", "Price high → low").forEach { opt ->
+                    DropdownMenuItem(
+                        text = { Text(opt) },
+                        onClick = {
+                            sort = opt
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(18.dp))
+        SectionHeader("Price/hour")
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("0", color = Color.Black)
+            Text(price.toInt().toString(), color = Color.Black)
+            Text("60", color = LabelGrey)
+        }
         Spacer(Modifier.height(8.dp))
+
         Slider(
             value = price,
             onValueChange = { price = it },
-            valueRange = 5f..100f,
-            steps = 18 // ≈ $5 increments
+            valueRange = 0f..60f,
+            steps = 0,
+            modifier = Modifier.fillMaxWidth(),
+            colors = SliderDefaults.colors(
+                thumbColor = Orange,
+                activeTrackColor = Orange,
+                inactiveTrackColor = DividerGrey
+            )
         )
-        Text("$ ${price.toInt()}/h")
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(14.dp))
+        SectionHeader("Rate")
 
-        // Minimum rating
-        Text("Minimum rating (${String.format("%.1f", rating)})", style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(8.dp))
-        ReviewStars(rating = rating, onRatingChange = { rating = it }, size = 28.dp)
-
-        Spacer(Modifier.height(16.dp))
-
-        // Distance (3-point slider)
-        Text("Distance", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-        ThreeValueSlider(
-            valueRange = 0f..2000f, // meters
-            startValue = 250f,
-            midValue = 1000f,
-            endValue = 2000f,
-            onValueChange = { distance = it },
-            modifier = Modifier.fillMaxWidth()
+        ReviewStars(
+            rating = rating,
+            onRatingChange = { rating = it },
+            size = 28.dp,
+            activeColor = Orange,
+            inactiveColor = Color(0xFFDADDE1)
         )
-        Text("${distance.toInt()} m")
-
-        Spacer(Modifier.height(16.dp))
-
-        // Categories (simple toggles)
-        Text("Categories", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-        FilterToggle("Plumber", plumber) { plumber = it }
-        FilterToggle("Electrician", electrician) { electrician = it }
-        FilterToggle("Carpenter", carpenter) { carpenter = it }
-        FilterToggle("Painter", painter) { painter = it }
 
         Spacer(Modifier.weight(1f))
 
-        OrangeButton(
-            onClick = {
-                onApply(
-                    FiltersState(
-                        pricePerHourMax = price.toInt(),
-                        minRating = rating,
-                        maxDistanceMeters = distance.toInt(),
-                        categories = buildList {
-                            if (plumber) add("Plumber")
-                            if (electrician) add("Electrician")
-                            if (carpenter) add("Carpenter")
-                            if (painter) add("Painter")
-                        }
+        /* ---------- Apply button ---------- */
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 22.dp)
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(14.dp),
+                    clip = false
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(
+                onClick = {
+                    onApply(
+                        FiltersState(
+                            pricePerHourMax = price.toInt(),
+                            minRating = rating,
+                            maxDistanceMeters = 2000,
+                            categories = emptyList()
+                        )
                     )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Orange,
+                    contentColor = Color.White
+                ),
+                elevation = ButtonDefaults.buttonElevation(0.dp)
+            ) {
+                Text(
+                    "Apply",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
-            },
-            text = "Apply filters"
-        )
+            }
+        }
     }
 }
 
+/* ---------- tiny helpers ---------- */
+
 @Composable
-private fun FilterToggle(
-    label: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
+private fun SectionHeader(title: String) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Text(title, color = LabelGrey, style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.width(10.dp))
+        Box(
+            Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(DividerGrey)
+        )
     }
 }

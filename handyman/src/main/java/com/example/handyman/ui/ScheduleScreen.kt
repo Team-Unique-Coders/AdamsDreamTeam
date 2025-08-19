@@ -1,171 +1,159 @@
 package com.example.handyman.ui
 
-import androidx.compose.foundation.horizontalScroll
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.project.common_utils.components.BackArrowIcon
-import com.project.common_utils.components.OrangeButton
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import com.example.handyman.R as HmR
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
     onBack: () -> Unit,
-    onConfirm: (selectedDate: LocalDate, selectedTime: String) -> Unit
+    onConfirm: (dateLabel: String, timeLabel: String) -> Unit,
+    providerName: String = "Jenny Jones",
+    @DrawableRes providerAvatar: Int = HmR.drawable.profilepicture
 ) {
-    // simple in-memory state
-    val today = remember { LocalDate.now() }
-    val dates = remember { (0..13).map { today.plusDays(it.toLong()) } } // next 2 weeks
-    var selectedDate by remember { mutableStateOf(dates.first()) }
+    val orange = Color(0xFFFF7A00)
+    val subtle = Color(0xFF8F9399)
+    var selectedDay by remember { mutableStateOf(6) }
 
-    val morning = listOf("08:00", "08:30", "09:00", "09:30", "10:00")
-    val afternoon = listOf("12:00", "12:30", "13:00", "14:00", "15:00")
-    val evening = listOf("17:00", "17:30", "18:00", "19:00")
-    val allSlots = listOf("Morning" to morning, "Afternoon" to afternoon, "Evening" to evening)
-    var selectedTime by remember { mutableStateOf(morning.first()) }
+    val times = listOf(
+        "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM",
+        "03:00 PM", "03:30 PM", "04:00 PM"
+    )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-
-        // Top bar
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            BackArrowIcon(onClick = onBack)
-            Spacer(Modifier.width(12.dp))
-            Text("Choose time", style = MaterialTheme.typography.titleLarge)
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                navigationIcon = { BackArrowIcon(onClick = onBack) },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(providerAvatar),
+                            contentDescription = null,
+                            modifier = Modifier.size(22.dp).clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(providerName, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            )
         }
-
-        Spacer(Modifier.height(16.dp))
-
-        // Date strip
-        Row(
+    ) { inner ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(inner)
+                .padding(horizontal = 16.dp)
         ) {
-            dates.forEach { date ->
-                val sel = date == selectedDate
-                DatePill(
-                    date = date,
-                    selected = sel,
-                    onClick = { selectedDate = date }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    "March 2019",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
                 )
-                Spacer(Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.Filled.ChevronRight,
+                    contentDescription = null,
+                    tint = subtle
+                )
             }
-        }
 
-        Spacer(Modifier.height(20.dp))
-
-        // Time slots
-        allSlots.forEach { (label, slots) ->
-            Text(label, style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
-            FlowRowGap {
-                slots.forEach { time ->
-                    TimeChip(
-                        text = time,
-                        selected = time == selectedTime,
-                        onClick = { selectedTime = time }
-                    )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                listOf("Sun","Mon","Tue","Wed","Thu","Fri","Sat").forEach {
+                    Text(it, color = subtle, fontSize = 13.sp)
                 }
             }
-            Spacer(Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                (4..10).forEach { day ->
+                    val selected = day == selectedDay
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(if (selected) orange else Color.Transparent)
+                            .clickable { selectedDay = day },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            day.toString(),
+                            color = if (selected) Color.White else Color.Unspecified,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+
+            Divider()
+
+            Column(Modifier.fillMaxWidth()) {
+                times.forEachIndexed { i, time ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .clickable { onConfirm("Tue, Mar $selectedDay", time) }
+                            .padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (i == 0) {
+                            Box(
+                                Modifier.size(6.dp).clip(CircleShape)
+                                    .background(Color(0xFF25314C))
+                            )
+                        } else {
+                            Spacer(Modifier.width(6.dp))
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Text(time, fontSize = 16.sp)
+                    }
+                    Divider()
+                }
+            }
         }
-
-        Spacer(Modifier.weight(1f))
-
-        // Confirm
-        OrangeButton(
-            onClick = { onConfirm(selectedDate, selectedTime) },
-            text = "Confirm"
-        )
-    }
-}
-
-/* --------- UI bits --------- */
-
-@Composable
-private fun DatePill(
-    date: LocalDate,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val dayName = date.dayOfWeek.name.lowercase().replaceFirstChar { it.titlecase() }.take(3) // Mon
-    val dayNum = date.dayOfMonth.toString()
-    val month = date.format(DateTimeFormatter.ofPattern("MMM"))
-
-    val colors = if (selected)
-        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
-    else
-        CardDefaults.cardColors()
-
-    Card(
-        colors = colors,
-        elevation = CardDefaults.cardElevation(2.dp),
-        onClick = onClick
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(dayName, color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
-            Text(dayNum,  style = MaterialTheme.typography.titleMedium,
-                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
-            Text(month,   color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
-        }
-    }
-}
-
-@Composable
-private fun TimeChip(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val colors = if (selected)
-        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
-    else
-        CardDefaults.cardColors()
-
-    Card(
-        colors = colors,
-        elevation = CardDefaults.cardElevation(1.dp),
-        onClick = onClick
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            color = if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-/**
- * Tiny flow-row helper to wrap chips onto multiple lines with consistent spacing.
- */
-@Composable
-private fun FlowRowGap(
-    gap: Int = 8,
-    content: @Composable () -> Unit
-) {
-    // Simple spacer-based wrap using a Column of Rows so we don't pull in Accompanist
-    val gapDp = gap.dp
-    Column {
-        var currentRowWidth = 0
-        var rows = mutableListOf<@Composable () -> Unit>()
-        // For simplicity, just put everything in one Row; Compose handles wrapping poorly without layout.
-        // Using a simple Row with wrap content is enough for demo; chips will scroll if overflow in a parent.
-        Row(horizontalArrangement = Arrangement.spacedBy(gapDp)) { content() }
     }
 }
