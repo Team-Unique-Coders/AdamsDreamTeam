@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.learn.ui.FiltersState
 import com.example.learn.ui.LearnFiltersScreen
 import com.example.learn.ui.LearnFormScreen
+import com.example.learn.ui.LearnMapScreen
 import com.example.learn.ui.LearnOrderCheckoutScreen
 import com.example.learn.ui.LearnProviderListScreen
 import com.example.learn.ui.LearnProviderProfileScreen
@@ -22,6 +23,7 @@ private object LearnRoutes {
     const val Welcome = "learn_welcome"
     const val Form = "learn_form"
     const val List = "learn_list"
+    const val Map = "learn_map"
     const val Profile = "learn_profile"
     const val Filters = "learn_filters"
     const val Schedule = "learn_schedule"
@@ -37,12 +39,18 @@ fun LearnNavEntry(externalNav: NavHostController? = null, onClose: () -> Unit) {
         composable(LearnRoutes.Welcome) {
             LearnWelcomeScreen(
                 onLetsGo = { nav.navigate(LearnRoutes.Form) },
-                onBack =  onClose
+                onBack = onClose
             )
         }
         composable(LearnRoutes.Form) {
             LearnFormScreen(
-                onNext = { nav.navigate(LearnRoutes.List) },
+                onNext = {
+                    nav.navigate(LearnRoutes.List) {
+                        popUpTo(LearnRoutes.Welcome) {
+                            inclusive = true
+                        }
+                    }
+                },
                 onBack = onClose
             )
         }
@@ -52,10 +60,17 @@ fun LearnNavEntry(externalNav: NavHostController? = null, onClose: () -> Unit) {
                 ?.get<FiltersState>("filters")
 
             LearnProviderListScreen(
-                onBack = { nav.popBackStack() },
+                onBack = onClose,
                 onOpenProvider = { /* item -> */ nav.navigate(LearnRoutes.Profile) },
                 onOpenFilters = { nav.navigate(LearnRoutes.Filters) },
+                onOpenMap = { nav.navigate(LearnRoutes.Map) },
                 filters = filters
+            )
+        }
+        composable(LearnRoutes.Map){
+            LearnMapScreen(
+                onBack = { nav.popBackStack() },
+                onOpenProvider = { /* item -> */ nav.navigate(LearnRoutes.Profile) }
             )
         }
         composable(LearnRoutes.Profile) {
