@@ -1,72 +1,127 @@
 package com.example.mechanic.navigation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.mechanic.ui.*
+import com.example.mechanic.ui.*     // the mechanic screens below
 
-private object McRoutes {
-    const val Welcome  = "mc_welcome"
-    const val Form     = "mc_form"
-    const val List     = "mc_list"
-    const val Profile  = "mc_profile"
-    const val Schedule = "mc_schedule"
-    const val Checkout = "mc_checkout"
-    const val Success  = "mc_success"
-    const val Filters  = "mc_filters"
+// If you share some generic screens (MapScreen, ScheduleScreen, etc.) in a common/ui pkg,
+// you can import them from there instead.
+
+private object MechRoutes {
+    const val Welcome  = "mech_welcome"
+    const val Form     = "mech_form"
+    const val List     = "mech_list"
+    const val Profile  = "mech_profile"
+    const val Schedule = "mech_schedule"
+    const val Checkout = "mech_checkout"
+    const val Filters  = "mech_filters"
+    const val Success  = "mech_success"
+    const val Map      = "mech_map"
 }
 
 @Composable
-fun MechanicNavEntry() {
+fun MechanicNavEntry(
+    externalNav: NavHostController? = null,
+    @DrawableRes heroResId: Int? = null,
+    @DrawableRes listBannerResId: Int? = null
+) {
     val nav = rememberNavController()
 
-    NavHost(navController = nav, startDestination = McRoutes.Welcome) {
-        composable(McRoutes.Welcome) {
-            MechanicWelcomeScreen(onLetsGo = { nav.navigate(McRoutes.Form) })
+    NavHost(navController = nav, startDestination = MechRoutes.Welcome) {
+        /* --------- WELCOME --------- */
+        composable(MechRoutes.Welcome) {
+            MechanicWelcomeScreen(
+                onLetsGo = { nav.navigate(MechRoutes.Form) },
+                onBack = { nav.popBackStack() },
+                heroResId = heroResId
+            )
         }
-        composable(McRoutes.Form) {
+
+        /* --------- FORM --------- */
+        composable(MechRoutes.Form) {
             MechanicFormScreen(
-                onNext = { nav.navigate(McRoutes.List) },
+                onNext = { nav.navigate(MechRoutes.List) },
                 onBack = { nav.popBackStack() }
             )
         }
-        composable(McRoutes.List) {
-            MechanicProviderListScreen(
+
+        /* --------- LIST --------- */
+        composable(MechRoutes.List) {
+            val filters = nav.previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<FiltersState>("filters")
+
+            MechanicListScreen(
                 onBack = { nav.popBackStack() },
-                onOpenFilters = { nav.navigate(McRoutes.Filters) },
-                onOpenProvider = { /* id -> */ nav.navigate(McRoutes.Profile) }
+                onOpenProvider = { nav.navigate(MechRoutes.Profile) },
+                onOpenFilters  = { nav.navigate(MechRoutes.Filters) },
+                onOpenMap      = { nav.navigate(MechRoutes.Map) },
+                filters = filters,
+                bannerResId = listBannerResId
             )
         }
-        composable(McRoutes.Profile) {
-            MechanicProviderProfileScreen(
+
+        /* --------- MAP --------- */
+        composable(MechRoutes.Map) {
+            MechanicMapScreen(
                 onBack = { nav.popBackStack() },
-                onTakeAppointment = { nav.navigate(McRoutes.Schedule) }
+                onOpenList = {
+                    val popped = nav.popBackStack(MechRoutes.List, inclusive = false)
+                    if (!popped) nav.navigate(MechRoutes.List)
+                },
+                onOpenProvider = { nav.navigate(MechRoutes.Profile) }
             )
         }
-        composable(McRoutes.Schedule) {
+
+        /* --------- PROFILE --------- */
+        composable(MechRoutes.Profile) {
+            MechanicProfileScreen(
+                onBack = { nav.popBackStack() },
+                onTakeAppointment = { nav.navigate(MechRoutes.Schedule) }
+            )
+        }
+
+        /* --------- SCHEDULE --------- */
+        composable(MechRoutes.Schedule) {
             MechanicScheduleScreen(
                 onBack = { nav.popBackStack() },
-                onConfirm = { _, _ -> nav.navigate(McRoutes.Checkout) }
+                onConfirm = { _, _ -> nav.navigate(MechRoutes.Checkout) }
             )
         }
-        composable(McRoutes.Checkout) {
-            MechanicOrderCheckoutScreen(
+
+        /* --------- CHECKOUT --------- */
+        composable(MechRoutes.Checkout) {
+            MechanicCheckoutScreen(
                 onBack = { nav.popBackStack() },
-                onPlaceOrder = { nav.navigate(McRoutes.Success) }
+                onPlaceOrder = { nav.navigate(MechRoutes.Success) }
             )
         }
-        composable(McRoutes.Success) {
+
+        /* --------- SUCCESS --------- */
+        composable(MechRoutes.Success) {
             MechanicSuccessScreen(
+                // same behavior we set for Handyman: go back to the List
                 onGoHome = {
-                    nav.popBackStack(McRoutes.Welcome, inclusive = false)
+                    val popped = nav.popBackStack(MechRoutes.List, inclusive = false)
+                    if (!popped) nav.navigate(MechRoutes.List)
                 }
             )
         }
-        composable(McRoutes.Filters) {
+
+        /* --------- FILTERS --------- */
+        composable(MechRoutes.Filters) {
             MechanicFiltersScreen(
                 onBack = { nav.popBackStack() },
-                onApply = { /* pass via savedStateHandle later */ nav.popBackStack() }
+                onApply = { newFilters ->
+                    nav.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("filters", newFilters)
+                    nav.popBackStack()
+                }
             )
         }
     }

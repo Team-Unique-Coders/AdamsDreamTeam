@@ -7,13 +7,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.project.common_utils.components.BackArrowIcon
-import com.project.common_utils.components.OrangeButton
 
 /* --- design tokens (match the rest of your feature) --- */
 private val Orange = Color(0xFFFF7A00)
@@ -30,9 +30,9 @@ fun HandymanFormScreen(
     var need by remember { mutableStateOf("Plumber") }
     var problem by remember { mutableStateOf("Do not work") }
 
-    // Availability: 5 discrete stops → indices 0..4 map to 8/11/14/17/20
+    // Availability: 5 discrete stops → 8/11/14/17/20
     val hours = listOf(8, 11, 14, 17, 20)
-    var availabilityIndex by remember { mutableIntStateOf(2) } // default 14h like the mock
+    var availabilityIndex by remember { mutableIntStateOf(2) } // default 14h
 
     Column(
         modifier = Modifier
@@ -54,10 +54,7 @@ fun HandymanFormScreen(
             ) {
                 BackArrowIcon(onClick = onBack, tint = Orange)
                 Spacer(Modifier.width(12.dp))
-                Text(
-                    "Your handyman",
-                    style = MaterialTheme.typography.titleLarge
-                )
+                Text("Your handyman", style = MaterialTheme.typography.titleLarge)
             }
         }
 
@@ -77,9 +74,7 @@ fun HandymanFormScreen(
         /* ---------- Problem dropdown ---------- */
         LabeledDropdown(
             label = "Problem",
-            options = listOf(
-                "Do not work", "Leak / broken", "Installation", "Maintenance", "Other"
-            ),
+            options = listOf("Do not work", "Leak / broken", "Installation", "Maintenance", "Other"),
             initial = problem,
             onPicked = { problem = it },
             modifier = Modifier.fillMaxWidth()
@@ -111,7 +106,7 @@ fun HandymanFormScreen(
         ) {
             hours.forEachIndexed { idx, h ->
                 Text(
-                    text = if (idx == availabilityIndex) "$h" + "h" else "$h" + "h",
+                    text = "${h}h",
                     style = if (idx == availabilityIndex)
                         MaterialTheme.typography.bodyMedium
                     else
@@ -121,12 +116,12 @@ fun HandymanFormScreen(
             }
         }
 
-        // Discrete slider with 4 steps (5 positions)
+        // Discrete slider
         Slider(
             value = availabilityIndex.toFloat(),
             onValueChange = { availabilityIndex = it.toInt().coerceIn(0, hours.lastIndex) },
             valueRange = 0f..hours.lastIndex.toFloat(),
-            steps = hours.size - 2, // 5 stops => 3 *internal* steps, but M3 expects size-2
+            steps = hours.size - 2,
             modifier = Modifier.fillMaxWidth(),
             colors = SliderDefaults.colors(
                 thumbColor = Orange,
@@ -137,22 +132,11 @@ fun HandymanFormScreen(
 
         Spacer(Modifier.weight(1f))
 
-        /* ---------- CTA with drop shadow like the mock ---------- */
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 22.dp)
-                .shadow(20.dp, RoundedCornerShape(14.dp), clip = false),
-            contentAlignment = Alignment.Center
-        ) {
-            // If your OrangeButton doesn't accept a modifier, wrapping keeps layout correct.
-            Box(Modifier.fillMaxWidth()) {
-                OrangeButton(
-                    onClick = onNext,
-                    text = "Next"
-                )
-            }
-        }
+        /* ---------- Full-width brand CTA (pill with shadow, inset-aware) ---------- */
+        NextButtonBar(
+            text = "Next",
+            onClick = onNext
+        )
     }
 }
 
@@ -214,6 +198,34 @@ private fun LabeledDropdown(
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 )
             }
+        }
+    }
+}
+
+/* Bottom sticky orange pill that matches the app theme */
+@Composable
+private fun NextButtonBar(
+    text: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()             // respect gesture bar
+            .padding(horizontal = 16.dp)         // side insets (fixed: split padding)
+            .padding(bottom = 16.dp)             // bottom inset (fixed)
+            .shadow(20.dp, RoundedCornerShape(24.dp), clip = false),
+        contentAlignment = Alignment.Center
+    ) {
+        Button(
+            onClick = onClick,
+            shape = RoundedCornerShape(24.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Orange),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+        ) {
+            Text(text, color = Color.White, style = MaterialTheme.typography.titleMedium)
         }
     }
 }
