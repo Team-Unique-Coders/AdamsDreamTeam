@@ -293,19 +293,19 @@ fun Tutorial(onMain: () -> Unit) {
         buildAnnotatedString {
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("No Favorite ") }
             withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("The profile will not appear") }
-        } to R.drawable.sadadam,
+        } to R.drawable.block,
         buildAnnotatedString {
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Like ") }
             withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("If it's mutual, you can talk together") }
-        } to R.drawable.happyadam,
+        } to R.drawable.like,
         buildAnnotatedString {
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Super Like ") }
             withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("Indicate visually that you are interested") }
-        } to R.drawable.love,
+        } to R.drawable.superlik,
         buildAnnotatedString {
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Boost ") }
             withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraLight)) { append("Be top profile for 30mins") }
-        } to R.drawable.adamboost
+        } to R.drawable.boost
     )
 
     Column(

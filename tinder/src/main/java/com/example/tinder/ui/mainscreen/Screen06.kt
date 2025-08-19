@@ -96,19 +96,19 @@ fun ProfileDetailScreen(
     )
 
     val iconToContent = mapOf(
-        R.drawable.happyadam to InfoCardContent(
+        R.drawable.like to InfoCardContent(
             background = R.drawable.likep,
             title = "You Liked",
             description = "If it's mutual, you’ll be able to start chatting.",
             onOk = { navController.navigate("likeScreen") }
         ),
-        R.drawable.love to InfoCardContent(
+        R.drawable.superlik to InfoCardContent(
             background = R.drawable.srlk,
             title = "Super Like!",
             description = "Show them you’re really interested with a Super Like.",
             onOk = { navController.navigate("superLikeScreen") }
         ),
-        R.drawable.adamboost to InfoCardContent(
+        R.drawable.boost to InfoCardContent(
             background = R.drawable.boostspic,
             title = "Boost your Profile",
             description = "Be the top profile in your area for 30 mins to get more matches.",
@@ -207,18 +207,18 @@ fun ProfileDetailScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             val icons = listOf(
-                R.drawable.returnemote,
-                R.drawable.sadadam,
-                R.drawable.happyadam,
-                R.drawable.love,
-                R.drawable.adamboost
+                R.drawable.back,
+                R.drawable.block,
+                R.drawable.like,
+                R.drawable.superlik,
+                R.drawable.boost
             )
 
             icons.forEach { iconRes ->
                 val isGlowing = when {
-                    activeGlow == GlowType.BOOST && iconRes == R.drawable.adamboost -> true
-                    activeGlow == GlowType.LIKE && iconRes == R.drawable.happyadam -> true
-                    activeGlow == GlowType.SUPERLIKE && iconRes == R.drawable.love -> true
+                    activeGlow == GlowType.BOOST && iconRes == R.drawable.boost -> true
+                    activeGlow == GlowType.LIKE && iconRes == R.drawable.like -> true
+                    activeGlow == GlowType.SUPERLIKE && iconRes == R.drawable.superlik -> true
                     else -> false
                 }
 
@@ -237,14 +237,14 @@ fun ProfileDetailScreen(
                             val clickedIcons = clickedPerProfile.getOrPut(currentUser?.id ?: -1) { mutableSetOf() }
 
                             when (iconRes) {
-                                R.drawable.returnemote -> onNext()
-                                R.drawable.sadadam -> {
+                                R.drawable.back -> onNext()
+                                R.drawable.block -> {
                                     allUsers.removeAt(currentIndex)
                                     if (currentIndex >= allUsers.size) {
                                         currentIndex = allUsers.size - 1
                                     }
                                 }
-                                R.drawable.happyadam -> {
+                                R.drawable.like -> {
                                     adam?.let {
                                         if (it.likes < 1) {
                                             selectedContent = iconToContent[iconRes]
@@ -261,7 +261,7 @@ fun ProfileDetailScreen(
                                         selectedContent = null
                                     }
                                 }
-                                R.drawable.love -> {
+                                R.drawable.superlik -> {
                                     adam?.let {
                                         if (it.superLikes < 1) {
                                             selectedContent = iconToContent[iconRes]
@@ -278,7 +278,7 @@ fun ProfileDetailScreen(
                                         selectedContent = null
                                     }
                                 }
-                                R.drawable.adamboost -> {
+                                R.drawable.boost -> {
                                     val now = System.currentTimeMillis()
                                     adam?.let {
                                         if (it.boosts < 1 || clickedIcons.contains(iconRes) || now - lastBoostClickTime < 30 * 60 * 1000) {
