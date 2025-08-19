@@ -1,3 +1,4 @@
+// file: com/example/bank/presentation/home/BankHomeScreen.kt
 package com.example.bank.presentation.home
 
 import androidx.compose.foundation.layout.*
@@ -33,9 +34,12 @@ import java.util.*
 fun BankHomeScreen(
     accounts: List<Account> = emptyList(),
     transactions: List<Transaction> = emptyList(),
+    monthsRange: IntRange? = null,               // ← used now
+    selectedCategories: Set<String> = emptySet(),// ← NEW param
     onClose: (() -> Unit)? = null,
     onOpenChecking: (() -> Unit)? = null,
-    onOpenTransaction: ((String) -> Unit)? = null
+    onOpenTransaction: ((String) -> Unit)? = null,
+    onOpenFilters: () -> Unit = {}
 ) {
     val brandOrange = Color(0xFFFF7A1A)
     val creditGreen = Color(0xFF10C971)
@@ -45,7 +49,7 @@ fun BankHomeScreen(
     val totalBalance = accounts.sumOf { it.balance }
 
     Scaffold(
-        containerColor = Color.White, // ← full screen white
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
                 title = {},
@@ -63,14 +67,14 @@ fun BankHomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: open filters */ }) {
+                    IconButton(onClick = onOpenFilters) {           // ← open Filters
                         Icon(Icons.Filled.Tune, contentDescription = "Filter")
                     }
                 }
             )
         }
     ) { inner ->
-        // Empty state → open Checking
+        // Empty state → CTA to open Checking
         if (accounts.isEmpty()) {
             Column(
                 modifier = Modifier
@@ -93,12 +97,30 @@ fun BankHomeScreen(
             return@Scaffold
         }
 
-        // Filter + search
-        val filtered = remember(transactions, tab, query) {
+        // --- FILTERING ---
+        val filtered = remember(transactions, tab, query, monthsRange, selectedCategories) {
             transactions
                 .asSequence()
-                .filter { t -> when (tab) { 1 -> t.type == TxnType.DEBIT; 2 -> t.type == TxnType.CREDIT; else -> true } }
+                // tab (All / Sent / Received)
+                .filter { t ->
+                    when (tab) {
+                        1 -> t.type == TxnType.DEBIT
+                        2 -> t.type == TxnType.CREDIT
+                        else -> true
+                    }
+                }
+                // search by counterparty
                 .filter { t -> query.isBlank() || t.counterparty.contains(query, ignoreCase = true) }
+                // months range (e.g., 6..12 where 12 = Now)
+                .filter { t -> monthsRange == null || tsInMonthsRange(t.timestampMs, monthsRange) }
+                // categories (map by counterparty → category label)
+                .filter { t ->
+                    if (selectedCategories.isEmpty()) true
+                    else {
+                        val cat = categoryOf(t.counterparty)
+                        cat != null && selectedCategories.contains(cat)
+                    }
+                }
                 .sortedByDescending { it.timestampMs }
                 .toList()
         }
@@ -108,7 +130,7 @@ fun BankHomeScreen(
                 .fillMaxSize()
                 .padding(inner)
         ) {
-            // Header: balance + avatar (on white)
+            // Header: balance + avatar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -125,7 +147,7 @@ fun BankHomeScreen(
                 }
             }
 
-            // Tabs — black labels + orange indicator on white background
+            // Tabs
             TabRow(
                 selectedTabIndex = tab,
                 containerColor = Color.White,
@@ -152,8 +174,8 @@ fun BankHomeScreen(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
                     disabledContainerColor = Color.White,
-                    focusedIndicatorColor = Color(0xFFE6E6E6),   // border color when focused
-                    unfocusedIndicatorColor = Color(0xFFE6E6E6), // border color when not focused
+                    focusedIndicatorColor = Color(0xFFE6E6E6),
+                    unfocusedIndicatorColor = Color(0xFFE6E6E6),
                     disabledIndicatorColor = Color(0xFFE6E6E6),
                     cursorColor = Color.Black
                 ),
@@ -161,8 +183,6 @@ fun BankHomeScreen(
                     .padding(horizontal = 16.dp, vertical = 10.dp)
                     .fillMaxWidth()
             )
-
-
 
             // Group by day buckets
             val groups = remember(filtered) { groupByDay(filtered) }
@@ -181,9 +201,9 @@ fun BankHomeScreen(
                                 .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("No transactions yet", style = MaterialTheme.typography.titleMedium)
+                            Text("No transactions match your filters", style = MaterialTheme.typography.titleMedium)
                             Text(
-                                "Make your first payment or add money.",
+                                "Try changing the date or categories.",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -197,7 +217,7 @@ fun BankHomeScreen(
                                 t,
                                 creditGreen = creditGreen,
                                 brandOrange = brandOrange,
-                                onClick = { onOpenTransaction?.invoke(t.id) }   // ← calls back up
+                                onClick = { onOpenTransaction?.invoke(t.id) }
                             )
                         }
                         item { Spacer(Modifier.height(8.dp)) }
@@ -210,6 +230,42 @@ fun BankHomeScreen(
 }
 
 /* ---------- helpers ---------- */
+
+private fun tsInMonthsRange(ts: Long, range: IntRange): Boolean {
+    fun monthsBackToMs(m: Int): Long {
+        val c = Calendar.getInstance()
+        c.add(Calendar.MONTH, -m.coerceAtLeast(0))
+        return c.timeInMillis
+    }
+    // Support reversed ranges and the “Now” sentinel (12) or 0
+    val far = maxOf(range.first, range.last)   // older bound (more months back)
+    val near = minOf(range.first, range.last)  // closer to now
+
+    val startMs = monthsBackToMs(far)          // earlier time
+    val endMs = if (near >= 12 || near <= 0) System.currentTimeMillis()
+    else monthsBackToMs(near)
+
+    return ts in startMs..endMs
+}
+
+private fun categoryOf(counterparty: String): String? {
+    val name = counterparty.lowercase(Locale.getDefault())
+    return when {
+        // Transport
+        listOf("uber","lyft","taxi","metro","bus").any { it in name } -> "Transport"
+        // Food
+        listOf("burger","pizza","kfc","mcdonald","restaurant","cafe","coffee").any { it in name } -> "Food"
+        // Friends
+        listOf("rebecca","franz","friend","moore","buddy").any { it in name } -> "Friends"
+        // Delivery
+        listOf("delivery","courier","parcel").any { it in name } -> "Delivery"
+        // Hotel
+        listOf("hotel","resort","inn","motel").any { it in name } -> "Hotel"
+        // Tutor / Services
+        listOf("tutor","service","iclickipay","iclickigo","lavery","clean").any { it in name } -> "Services"
+        else -> null
+    }
+}
 
 private fun groupByDay(list: List<Transaction>): LinkedHashMap<String, List<Transaction>> {
     val result = LinkedHashMap<String, List<Transaction>>()
@@ -259,7 +315,7 @@ private fun TransactionRow(
 ) {
     ElevatedCard(
         onClick = { onClick?.invoke() },
-        colors = CardDefaults.elevatedCardColors(containerColor = Color.White) // ← pure white card
+        colors = CardDefaults.elevatedCardColors(containerColor = Color.White)
     ) {
         Row(
             modifier = Modifier
@@ -283,7 +339,6 @@ private fun TransactionRow(
                                 fontWeight = FontWeight.Normal
                             )
                         ) { append(prefix) }
-
                         withStyle(
                             SpanStyle(
                                 color = Color.Black,
@@ -295,7 +350,6 @@ private fun TransactionRow(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
                 val date = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date(t.timestampMs))
                 Text(date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

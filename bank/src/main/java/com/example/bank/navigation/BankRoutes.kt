@@ -11,6 +11,7 @@ object BankRoutes {
 
     // Home
     const val HOME = "bank/home"
+    const val FILTERS = "bank/filters"
 
     // Transaction detail
     const val TXN_DETAIL = "bank/txn/{txnId}"
