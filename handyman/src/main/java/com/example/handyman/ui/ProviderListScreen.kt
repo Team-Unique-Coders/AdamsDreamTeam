@@ -71,7 +71,7 @@ fun ProviderListScreen(
             }
     }
 
-    val banner = bannerResId?.takeIf { it != 0 } ?: HmR.drawable.handyman_list
+    val banner = bannerResId?.takeIf { it != 0 } ?: HmR.drawable.mechanic_list
 
     Scaffold(containerColor = PAGE_BG) { inner ->
         LazyColumn(

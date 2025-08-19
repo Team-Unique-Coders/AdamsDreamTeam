@@ -39,6 +39,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":handyman"))
+
     // ---- Feature & shared modules ----
     // implementation(project(":components")) // uncomment if you actually use it
 
