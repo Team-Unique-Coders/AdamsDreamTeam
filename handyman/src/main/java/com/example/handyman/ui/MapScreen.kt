@@ -2,6 +2,7 @@ package com.example.handyman.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -22,11 +23,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.project.common_utils.components.MapComponent
 import com.example.handyman.R as HmR
 
@@ -34,11 +38,14 @@ import com.example.handyman.R as HmR
 fun MapScreen(
     onBack: () -> Unit,
     onOpenList: () -> Unit,
-    onOpenProvider: () -> Unit   // <— NEW
+    onOpenProvider: (String) -> Unit   // pass provider name to open the right profile
 ) {
     Box(Modifier.fillMaxSize()) {
+
+        /* --- Map --- */
         MapComponent(latitude = -26.2041, longitude = 28.0473)
 
+        /* --- Top chips (home | filters | list) --- */
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -49,26 +56,66 @@ fun MapScreen(
         ) {
             RoundChip(iconRes = HmR.drawable.return_home, onClick = onBack, modifier = Modifier.size(40.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                RoundChip(iconRes = HmR.drawable.options, onClick = { /* filters if you want */ }, modifier = Modifier.size(40.dp))
+                RoundChip(iconRes = HmR.drawable.options, onClick = { /* TODO: filters */ }, modifier = Modifier.size(40.dp))
                 RoundChipVector(vector = Icons.AutoMirrored.Filled.List, onClick = onOpenList, modifier = Modifier.size(40.dp))
             }
         }
 
+        /* --- Search bar overlay --- */
         SearchBarOverlay(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 68.dp, start = 16.dp, end = 16.dp)
         )
 
-        RoundChip(
-            iconRes = HmR.drawable.location,
-            onClick = { /* center map */ },
+        /* --- Avatar markers (mock look; positioned overlays) --- */
+        MapAvatarMarker(
+            res = HmR.drawable.profilepicture,             // Jenny
+            modifier = Modifier.align(Alignment.Center)     // center-ish
+                .offset(x = (-8).dp, y = 24.dp)
+        )
+        MapAvatarMarker(
+            res = HmR.drawable.profilepicture2,            // Jean
+            modifier = Modifier.align(Alignment.CenterEnd)
+                .offset(x = (-48).dp, y = 46.dp)
+        )
+        MapAvatarMarker(
+            res = HmR.drawable.profilepicture,
+            modifier = Modifier.align(Alignment.TopStart)
+                .offset(x = 42.dp, y = 150.dp)
+        )
+        MapAvatarMarker(
+            res = HmR.drawable.profilepicture2,
+            modifier = Modifier.align(Alignment.BottomStart)
+                .offset(x = 36.dp, y = (-140).dp)
+        )
+        MapAvatarMarker(
+            res = HmR.drawable.profilepicture,
+            modifier = Modifier.align(Alignment.TopEnd)
+                .offset(x = (-110).dp, y = 110.dp)
+        )
+
+        /* --- “My location” FAB (white chip with blue target) --- */
+        Surface(
+            onClick = { /* TODO: center map */ },
+            shape = CircleShape,
+            color = Color.White,
+            shadowElevation = 10.dp,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp)
                 .size(56.dp)
-        )
+        ) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Image(
+                    painter = painterResource(HmR.drawable.location),
+                    contentDescription = "Center on my location",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
 
+        /* --- Bottom mini cards --- */
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -79,24 +126,53 @@ fun MapScreen(
             ProviderMiniCard(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable { onOpenProvider() },   // <-- open profile
-                photo = HmR.drawable.handyman_list,
+                    .clickable { onOpenProvider("Jenny Jones") },
+                photo = HmR.drawable.profilepicture,
                 name = "Jenny Jones",
                 rating = "4.8",
-                distance = "4.5 Mile\nNearby"
+                distanceTop = "4.5 Mile",
+                distanceBottom = "Nearby"
             )
             ProviderMiniCard(
-                modifier = Modifier.weight(1f),
-                photo = HmR.drawable.handyman_list,
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onOpenProvider("Jean Down") },
+                photo = HmR.drawable.profilepicture2,
                 name = "Jean Down",
                 rating = "4.8",
-                distance = "4.5 Mile\nNearby"
+                distanceTop = "4.5 Mile",
+                distanceBottom = "Nearby"
             )
         }
     }
 }
 
-/* ------ the helper composables from your previous version (unchanged) ------ */
+/* ================== helpers ================== */
+
+@Composable
+private fun MapAvatarMarker(
+    @DrawableRes res: Int,
+    modifier: Modifier = Modifier
+) {
+    // white circled avatar with soft shadow = “pin” look
+    Surface(
+        shape = CircleShape,
+        color = Color.White,
+        shadowElevation = 8.dp,
+        modifier = modifier.size(40.dp)
+    ) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Image(
+                painter = painterResource(res),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
+    }
+}
 
 @Composable
 private fun RoundChip(
@@ -142,7 +218,7 @@ private fun SearchBarOverlay(modifier: Modifier = Modifier) {
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = Color.White,
-        shadowElevation = 10.dp,
+        shadowElevation = 12.dp,
         modifier = modifier.fillMaxWidth()
     ) {
         TextField(
@@ -162,19 +238,21 @@ private fun SearchBarOverlay(modifier: Modifier = Modifier) {
     }
 }
 
+/* mini cards matching the mock a bit closer (two-line distance) */
 @Composable
 private fun ProviderMiniCard(
     modifier: Modifier = Modifier,
     @DrawableRes photo: Int,
     name: String,
     rating: String,
-    distance: String
+    distanceTop: String,
+    distanceBottom: String
 ) {
     Surface(
         shape = RoundedCornerShape(14.dp),
         color = Color.White,
         tonalElevation = 0.dp,
-        shadowElevation = 10.dp,
+        shadowElevation = 12.dp,
         modifier = modifier.height(120.dp)
     ) {
         Column(Modifier.fillMaxSize()) {
@@ -212,7 +290,10 @@ private fun ProviderMiniCard(
                     Spacer(Modifier.width(6.dp))
                     Text(rating)
                 }
-                Text(distance, color = Color(0xFF90959B))
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(distanceTop, color = Color(0xFF90959B), fontSize = 12.sp, textAlign = TextAlign.End)
+                    Text(distanceBottom, color = Color(0xFF90959B), fontSize = 12.sp, textAlign = TextAlign.End)
+                }
             }
         }
     }

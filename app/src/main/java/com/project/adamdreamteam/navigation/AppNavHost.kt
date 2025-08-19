@@ -10,7 +10,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,6 +32,12 @@ import com.example.chat.entry.ChatEntry
 import com.example.handyman.navigation.HandymanNavEntry
 import com.example.learn.navigation.LearnNavEntry
 import com.example.mechanic.navigation.MechanicNavEntry
+import com.example.doctor.navigation.DoctorEntry
+
+import com.project.adamdreamteam.R as AppR
+
+
+import com.example.tinder.ui.LoopingMusicButton
 import com.example.tinder.ui.animation.LoopingMusicButton
 import com.example.tinder.ui.animation.RainEffectController
 import com.example.uber.nav.UberNavigation
@@ -39,7 +47,7 @@ import com.example.uber.nav.UberNavigation
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
@@ -63,7 +71,14 @@ fun AppNavHost(
         }
 
         composable(Routes.DELIVERY) { StubScreen("Delivery") }
-        composable(Routes.LEARN) { LearnNavEntry() }
+        composable(Routes.LEARN) {
+            LearnNavEntry(onClose = {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.HOME) { inclusive = false }
+                    launchSingleTop = true
+                }
+            })
+        }
         composable(Routes.CHAT) {
             ChatEntry(
                 onClose = {
@@ -74,8 +89,15 @@ fun AppNavHost(
                 }
             )
         }
-        composable(Routes.DOCTOR) { StubScreen("Doctor") }
 
+        composable(Routes.DOCTOR) {
+            DoctorEntry(onClose = {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.HOME) { inclusive = false }
+                    launchSingleTop = true
+                }
+            })
+        }
         addLaundryGraph(
             nav = navController,
             onOpen = { route -> navController.navigate(route) }
