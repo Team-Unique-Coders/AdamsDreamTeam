@@ -1,6 +1,7 @@
 package com.example.bank.presentation.send
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,7 +31,7 @@ fun SendConfirmScreen(
     onConfirmSend: () -> Unit
 ) {
     val brandOrange = Color(0xFFFF7A1A)
-    val money = NumberFormat.getCurrencyInstance(Locale.US).apply { currency = java.util.Currency.getInstance("USD") }
+    val creditGreen = Color(0xFF10C971)
 
     val fees = 0.0
     val total = amount + fees
@@ -40,7 +41,7 @@ fun SendConfirmScreen(
         containerColor = Color.White,
         topBar = {
             TopAppBar(
-                title = { Text("Send money") },
+                title = { Text("Send money", fontWeight = FontWeight.SemiBold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White,
                     navigationIconContentColor = Color.Black,
@@ -59,75 +60,35 @@ fun SendConfirmScreen(
                 .fillMaxSize()
                 .padding(inner)
                 .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Spacer(Modifier.height(8.dp))
 
             // Big amount on top
             Text(
                 text = "$ ${"%,.2f".format(amount)}",
-                style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            // Selected contact tile
-            SelectedContactCard(contact = contact)
-
-            Spacer(Modifier.height(24.dp))
-
-            // Fees
-            Text(
-                "Transaction fees",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = "$ 0",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Spacer(Modifier.height(14.dp))
-
-            // Total amount
-            Text(
-                "Total amount",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = "$ ${"%,.2f".format(total)}",
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 48.sp
+                ),
                 color = brandOrange,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(16.dp))
-            Divider(color = Color(0xFFEAEAEA))
-            Spacer(Modifier.height(16.dp))
+            // Selected contact card
+            SelectedContactCard(contact, brandOrange)
 
-            // Balance after payment
-            Text(
-                "Your balance after payment",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = "$ ${"%,.2f".format(afterBalance)}",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold
-            )
+            // Transaction summary card
+            TransactionSummaryCard(total, afterBalance, brandOrange, creditGreen)
 
             Spacer(Modifier.weight(1f))
 
+            // Send button
             OrangeButton(
                 onClick = onConfirmSend,
-                text = "Send"
+                text = "Send",
             )
 
             Spacer(Modifier.height(24.dp))
@@ -135,40 +96,76 @@ fun SendConfirmScreen(
     }
 }
 
-/** Simple centered card showing the chosen contact (initials avatar + name). */
 @Composable
-private fun SelectedContactCard(contact: Contact) {
+private fun SelectedContactCard(contact: Contact, brandOrange: Color) {
     Card(
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F7F7)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFAF5)),
+        elevation = CardDefaults.cardElevation(12.dp),
+        modifier = Modifier.padding(vertical = 8.dp)
     ) {
         Column(
             modifier = Modifier
-                .width(220.dp)
-                .padding(vertical = 16.dp, horizontal = 12.dp),
+                .width(240.dp)
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Placeholder avatar with initials
             Box(
                 modifier = Modifier
-                    .size(72.dp)
-                    .background(color = Color(0xFFECECEC), shape = CircleShape),
+                    .size(80.dp)
+                    .background(color = Color(0xFFFFF2E6), shape = CircleShape)
+                    .border(width = 2.dp, color = brandOrange, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = contact.initials,
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp),
-                    color = Color.Black
+                    contact.initials,
+                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 26.sp),
+                    color = brandOrange
                 )
             }
-
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Text(
-                text = contact.name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                contact.name,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun TransactionSummaryCard(total: Double, afterBalance: Double, brandOrange: Color, creditGreen: Color) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8F0)),
+        elevation = CardDefaults.cardElevation(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Total amount
+            Text("Total amount", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            Text(
+                "$ ${"%,.2f".format(total)}",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = brandOrange
+            )
+
+            // Fees
+            Text("Transaction fees", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            Text("$ 0.00", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+
+            // Balance after payment
+            Text("Balance after payment", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            Text(
+                "$ ${"%,.2f".format(afterBalance)}",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = creditGreen
             )
         }
     }
