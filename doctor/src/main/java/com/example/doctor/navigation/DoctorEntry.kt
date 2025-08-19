@@ -28,7 +28,7 @@ fun DoctorEntry(externalNav: NavHostController? = null, onClose: () -> Unit) {
         composable(DoctorRoutes.Welcome) {
             DoctorWelcomeScreen(
                 onLetsGo = { nav.navigate(DoctorRoutes.Option) },
-                onBack = onClose
+//                onBack = onClose
             )
         }
         composable(DoctorRoutes.Option){

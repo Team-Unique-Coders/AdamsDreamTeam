@@ -18,7 +18,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bank.BankScreen
 import com.example.tinder.nav.AppNavigation
-import com.example.tinder.ui.RainEffectController
 import com.example.bank.entry.BankEntry
 import com.example.chat.entry.ChatEntry
 import com.example.mechanic.navigation.MechanicNavEntry
@@ -35,9 +34,6 @@ import com.example.mechanic.navigation.MechanicNavEntry
 import com.example.doctor.navigation.DoctorEntry
 
 import com.project.adamdreamteam.R as AppR
-
-
-import com.example.tinder.ui.LoopingMusicButton
 import com.example.tinder.ui.animation.LoopingMusicButton
 import com.example.tinder.ui.animation.RainEffectController
 import com.example.uber.nav.UberNavigation

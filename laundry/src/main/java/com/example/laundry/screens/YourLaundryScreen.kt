@@ -83,7 +83,9 @@ fun YourLaundryScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(16.dp),
+                 contentAlignment = Alignment.Center
+
             ) {
                 OrangeButton(
                     onClick = {
