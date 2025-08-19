@@ -1,6 +1,7 @@
 package com.example.laundry.screens
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,14 +17,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.laundry.data.Provider
+import com.example.laundry.data.providerKey
 import com.example.laundry.navigation.LaundryDestinations
+import com.project.common_utils.components.OrangeButton
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -37,6 +40,7 @@ private val Heading = Color(0xFF2E2E3E)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ScheduleScreen(
+    provider: Provider,
     providerName: String,
     providerPhotoUrl: String,
     initialDate: LocalDate = LocalDate.now(),
@@ -52,45 +56,57 @@ fun ScheduleScreen(
     var currentMonth by remember { mutableStateOf(YearMonth.from(initialDate)) }
     var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
 
-    val weekDates = remember(currentMonth, selectedDate) {
-        val anchor = selectedDate.coerceIn(currentMonth.atDay(1), currentMonth.atEndOfMonth())
-        val startOfWeek = anchor.with(DayOfWeek.SUNDAY)
-        (0..6).map { startOfWeek.plusDays(it.toLong()) }
-    }
-
     val timeSlots = remember(startTime, endTime, slotMinutes) {
         generateSlots(startTime, endTime, slotMinutes)
     }
+    val context = LocalContext.current
+
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {onOpen(LaundryDestinations.YOURLAUNDRY)},
+        bottomBar = {
+            BottomAppBar {
+                Spacer(Modifier.weight(1f))
+                OrangeButton(
+                    onClick = {
 
-                ) {
-                Text("NEXT")
+                        if (selectedTime != null) {
+                            onTimeSelected(selectedDate, selectedTime!!)
+                            val id = providerKey(provider)
+                            onOpen(
+                                LaundryDestinations.yourLaundry(
+                                    id = id,
+                                    date = selectedDate.toString(),  // e.g. 2025-08-18
+                                    time = selectedTime.toString()              // e.g. 13:30
+                                )
+                            )
+                        }else{
+                            Toast.makeText(context,"Please Select Date and Time",
+                                Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                   "Checkout"
+                )
+                Spacer(Modifier.weight(1f))
             }
-
         }
-    ) {paddingValue ->
-        Column(Modifier.fillMaxSize().padding(paddingValue)) {
+    ) { paddingValue ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValue)
+        ) {
             TopBar(providerName, providerPhotoUrl, onBack)
 
             MonthHeader(
                 yearMonth = currentMonth,
                 onPrev = {
                     currentMonth = currentMonth.minusMonths(1)
-                    selectedDate = selectedDate.minusMonths(1)
-                    onDateChanged(selectedDate)
                 },
                 onNext = {
                     currentMonth = currentMonth.plusMonths(1)
-                    selectedDate = selectedDate.plusMonths(1)
-                    onDateChanged(selectedDate)
                 }
             )
 
-            WeekRow(
-                dates = weekDates,
+            WeekRowPager(
                 month = currentMonth,
                 selected = selectedDate,
                 onSelect = {
@@ -109,19 +125,17 @@ fun ScheduleScreen(
             ) {
                 items(timeSlots) { time ->
                     TimeRow(
-                        label = time.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.getDefault())),
+                        label = time.format(
+                            DateTimeFormatter.ofPattern("hh:mm a", Locale.getDefault())
+                        ),
                         selected = selectedTime == time,
-                        onClick = {
-                            selectedTime = time
-                            onTimeSelected(selectedDate, time)
-                        }
+                        onClick = { selectedTime = time }
                     )
                     Divider()
                 }
             }
         }
     }
-
 }
 
 /* ───────────────────────── UI pieces ───────────────────────── */
@@ -140,7 +154,9 @@ private fun TopBar(
         IconButton(
             onClick = onBack,
             modifier = Modifier.align(Alignment.CenterStart)
-        ) { Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Orange) }
+        ) {
+            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Orange)
+        }
 
         Row(
             modifier = Modifier.align(Alignment.Center),
@@ -175,7 +191,6 @@ private fun MonthHeader(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Use ArrowBack mirrored for right arrow to avoid extra icon deps
         IconButton(onClick = onPrev) {
             Icon(Icons.Default.ArrowBack, contentDescription = "Prev", tint = Orange)
         }
@@ -187,75 +202,85 @@ private fun MonthHeader(
             color = Heading
         )
         IconButton(onClick = onNext) {
-            Icon(
-                Icons.Default.ArrowForward,
-                contentDescription = "Next",
-                tint = Orange,
-                )
+            Icon(Icons.Default.ArrowForward, contentDescription = "Next", tint = Orange)
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun WeekRow(
-    dates: List<LocalDate>,
+private fun WeekRowPager(
     month: YearMonth,
-    selected: LocalDate,
+    selected: LocalDate?,
     onSelect: (LocalDate) -> Unit
 ) {
-    val dowLabels = listOf("Sun","Mon","Tue","Wed","Thu","Fri","Sat")
+    val startOfMonth = month.atDay(1).with(DayOfWeek.SUNDAY)
+    val endOfMonth = month.atEndOfMonth().with(DayOfWeek.SATURDAY)
+
+    val allWeeks = generateSequence(startOfMonth) { it.plusWeeks(1) }
+        .takeWhile { it <= endOfMonth }
+        .toList()
 
     Column(Modifier.fillMaxWidth()) {
+        // Days of week header
         Row(
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            dowLabels.forEach { label ->
+            listOf("Sun","Mon","Tue","Wed","Thu","Fri","Sat").forEach { label ->
                 Text(
-                    label,
+                    text = label,
                     color = DimText,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.width(40.dp),
+                    modifier = Modifier
+                        .weight(1f),  // ✅ Equal 7 parts
                     textAlign = TextAlign.Center
                 )
             }
         }
         Spacer(Modifier.height(6.dp))
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            dates.forEach { date ->
-                val inThisMonth = YearMonth.from(date) == month
-                val isSelected = date == selected
-                val numberColor =
-                    if (!inThisMonth) DimText.copy(alpha = 0.6f) else if (isSelected) Color.White else Heading
 
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(if (isSelected) Orange else Color.Transparent)
-                        .clickable { onSelect(date) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        date.dayOfMonth.toString(),
-                        color = numberColor,
-                        style = MaterialTheme.typography.titleMedium
-                    )
+        // Calendar grid
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            allWeeks.forEach { startOfWeek ->
+                Row(Modifier.fillMaxWidth()) {
+                    (0..6).map { startOfWeek.plusDays(it.toLong()) }.forEach { date ->
+                        val inThisMonth = YearMonth.from(date) == month
+                        val isSelected = date == selected
+                        val numberColor =
+                            if (!inThisMonth) DimText.copy(alpha = 0.6f)
+                            else if (isSelected) Color.White else Heading
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)     // ✅ Equal width for each day
+                                .aspectRatio(1f) // Square cell
+                                .clip(CircleShape)
+                                .background(if (isSelected) Orange else Color.Transparent)
+                                .clickable { onSelect(date) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = date.dayOfMonth.toString(),
+                                color = numberColor,
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
         Spacer(Modifier.height(8.dp))
     }
 }
+
+
 
 @Composable
 private fun TimeRow(
@@ -271,7 +296,6 @@ private fun TimeRow(
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Bullet (visible only when selected)
         Text(
             text = if (selected) "•" else " ",
             color = Orange,
@@ -302,15 +326,15 @@ private fun generateSlots(start: LocalTime, end: LocalTime, stepMinutes: Int): L
 
 /* ───────────────────────── Preview ───────────────────────── */
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true, heightDp = 900)
-@Composable
-private fun SchedulePreview() {
-    MaterialTheme {
-        ScheduleScreen(
-            providerName = "Jenny Jones",
-            providerPhotoUrl = "https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg",
-            initialDate = LocalDate.of(2019, 3, 6) // matches your mock
-        )
-    }
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Preview(showBackground = true, heightDp = 900)
+//@Composable
+//private fun SchedulePreview() {
+//    MaterialTheme {
+//        ScheduleScreen(
+//            providerName = "Jenny Jones",
+//            providerPhotoUrl = "https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg",
+//            initialDate = LocalDate.of(2025, 8, 18)
+//        )
+//    }
+//}
