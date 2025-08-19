@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.project.common_utils.R
 
 
 @Preview(showBackground = true)
@@ -43,7 +45,7 @@ fun OrangeButton(onClick: () -> Unit, text:String) {
             pressedElevation = 12.dp
         ),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFFF9800), // Orange background
+            containerColor = colorResource(R.color.orange), // Orange background
             contentColor = Color.White // Text color
         )
     ) {

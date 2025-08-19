@@ -17,14 +17,57 @@ class FakeChatRepository : ChatRepository {
 
     private val meId = "me"
 
+    // ---- Contacts (static) ----
     private val contactsState = MutableStateFlow(
         listOf(
-            Contact("c1", "Rebecca Moore", "rebeccaca@gmail.com", isStarred = true),
-            Contact("c2", "Franz Ferdinand", "Ferdinandand@gmail.com"),
-            Contact("c3", "My buddyz", "0678564789"),
-            Contact("c4", "Burger delivery", "support@burger.com")
+            Contact(
+                id = "c1",
+                name = "Rebecca Moore",
+                avatarUrl = null,
+                emailOrPhone = "+1 415-555-0137",
+                isStarred = true
+            ),
+            Contact(
+                id = "c2",
+                name = "Franz Ferdinand",
+                avatarUrl = null,
+                emailOrPhone = "franz.ferdinand@example.com"
+            ),
+            Contact(
+                id = "c3",
+                name = "My buddyz",
+                avatarUrl = null,
+                emailOrPhone = "+44 7700 900123"
+            ),
+            Contact(
+                id = "c4",
+                name = "Burger delivery",
+                avatarUrl = null,
+                emailOrPhone = "support@burger.com"
+            ),
+            // a couple more so A–Z & favorites look good
+            Contact(
+                id = "c5",
+                name = "Amy Adams",
+                avatarUrl = null,
+                emailOrPhone = "amy@adams.co",
+                isStarred = true
+            ),
+            Contact(
+                id = "c6",
+                name = "Zoe Zhang",
+                avatarUrl = null,
+                emailOrPhone = "+65 8123 4567"
+            ),
+            Contact(
+                id = "c7",
+                name = "Carlos Mendez",
+                avatarUrl = null,
+                emailOrPhone = "carlos.m@example.com"
+            )
         )
     )
+
 
 
     private val chatsState = MutableStateFlow(
@@ -78,7 +121,7 @@ class FakeChatRepository : ChatRepository {
             "chat_c3" -> listOf(
                 msg(otherId, 400, "Bro??"),
                 msg(meId,    380, "What"),
-                msg(otherId,  30, "So what??? Please tell me why you can’t …")
+                msg(otherId,  30, "So what??? Please tell me why you can’t come?")
             )
             "chat_c4" -> listOf(
                 msg(otherId, 500, "Order #A1278"),

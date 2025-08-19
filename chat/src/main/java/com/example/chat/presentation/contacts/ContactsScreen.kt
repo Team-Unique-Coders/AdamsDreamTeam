@@ -1,5 +1,7 @@
 package com.example.chat.presentation.contacts
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,7 @@ import com.example.chat.navigation.ChatRoutes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,16 +27,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import com.example.chat.domain.model.Contact
 import kotlinx.coroutines.launch
 import com.example.chat.presentation.ui.Avatar
+import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,52 +106,115 @@ fun ContactsPane(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(filtered, key = { it.id }) { contact ->
-                val dismissState = rememberSwipeToDismissBoxState(
-                    confirmValueChange = { value ->
-                        if (value == SwipeToDismissBoxValue.EndToStart) {
-                            vm.deleteContact(contact.id); true
-                        } else false
-                    }
-                )
+                val scope = rememberCoroutineScope()
+                val density = LocalDensity.current
+                val revealWidth = 88.dp
+                val revealPx = with(density) { revealWidth.toPx() }
+                val offsetX = remember { Animatable(0f) }     // 0f = closed, -revealPx = open
+                var showConfirm by rememberSaveable { mutableStateOf(false) }
 
-                SwipeToDismissBox(
-                    state = dismissState,
-                    enableDismissFromStartToEnd = false,
-                    backgroundContent = {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(vertical = 6.dp)           // ← match foreground spacing
-                                .clip(cardShape)                     // ← match card shape
-                                .background(MaterialTheme.colorScheme.errorContainer),
-                            verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerInput(revealPx) {
+                            detectHorizontalDragGestures(
+                                onHorizontalDrag = { _, dragAmount ->
+                                    val new = (offsetX.value + dragAmount).coerceIn(-revealPx, 0f)
+                                    scope.launch { offsetX.snapTo(new) }
+                                },
+                                onDragEnd = {
+                                    val target =
+                                        if (offsetX.value <= -revealPx / 2f) -revealPx else 0f
+                                    scope.launch { offsetX.animateTo(target, tween(180)) }
+                                },
+                                onDragCancel = {
+                                    scope.launch { offsetX.animateTo(0f, tween(180)) }
+                                }
+                            )
+                        }
+                ) {
+                    // Orange delete tray (under the card)
+                    Row(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .padding(vertical = 6.dp)      // match card’s vertical padding
+                            .clip(cardShape)
+                            .background(Color(0xFFFF7A00)),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Spacer(Modifier.weight(1f))
+                        IconButton(
+                            onClick = { showConfirm = true },
+                            modifier = Modifier.padding(end = 16.dp)
                         ) {
-                            Spacer(Modifier.weight(1f))
                             Icon(
                                 Icons.Filled.Delete,
                                 contentDescription = "Delete",
-                                tint = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(end = 24.dp)
+                                tint = Color.White
                             )
                         }
                     }
-                ) {
+
+                    // Foreground card slides horizontally
                     ElevatedCard(
-                        onClick = { nav.navigate(ChatRoutes.detail("chat_${contact.id}")) },
+                        onClick = {
+                            scope.launch { offsetX.animateTo(0f, tween(160)) }
+                            nav.navigate(ChatRoutes.detail("chat_${contact.id}"))
+                        },
                         shape = cardShape,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp)               // ← same spacing as background
+                            .padding(vertical = 6.dp)
+                            .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                     ) {
                         ListItem(
-                            leadingContent = { Avatar(name = contact.name, url = contact.avatarUrl) },
+                            leadingContent = {
+                                Avatar(
+                                    name = contact.name,
+                                    url = contact.avatarUrl
+                                )
+                            },
                             headlineContent = { Text(contact.name) },
-                            supportingContent = { Text(contact.emailOrPhone ?: "") }
+                            supportingContent = {
+                                val detail = remember(contact.emailOrPhone) {
+                                    contact.emailOrPhone?.takeIf { it.isNotBlank() } ?: "No contact info"
+                                }
+                                Text(
+                                    text = detail,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
+                                )
+                            }
+
                         )
                     }
                 }
-            }
 
+                // Per-row confirm dialog
+                if (showConfirm) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showConfirm = false
+                            scope.launch { offsetX.animateTo(0f, tween(160)) }
+                        },
+                        title = { Text("Delete contact?") },
+                        text = { Text("This will remove the contact and its 1:1 chat/call logs. This can’t be undone.") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showConfirm = false
+                                vm.deleteContact(contact.id)   // cascades remove chat & calls
+                            }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                showConfirm = false
+                                scope.launch { offsetX.animateTo(0f, tween(160)) }
+                            }) { Text("Cancel") }
+                        }
+                    )
+                }
+            }
 
         }
         return
@@ -243,51 +315,107 @@ fun ContactsPane(
                     Divider()
                 }
                 items(section.items, key = { it.id }) { contact ->
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = { value ->
-                            if (value == SwipeToDismissBoxValue.EndToStart) {
-                                vm.deleteContact(contact.id); true
-                            } else false
-                        }
-                    )
+                    val scope = rememberCoroutineScope()
+                    val density = LocalDensity.current
+                    val revealWidth = 88.dp
+                    val revealPx = with(density) { revealWidth.toPx() }
+                    val offsetX = remember { Animatable(0f) }     // 0f = closed, -revealPx = open
+                    var showConfirm by rememberSaveable { mutableStateOf(false) }
 
-                    SwipeToDismissBox(
-                        state = dismissState,
-                        enableDismissFromStartToEnd = false,
-                        backgroundContent = {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(vertical = 6.dp)           // ← match spacing
-                                    .clip(cardShape)                     // ← match shape
-                                    .background(MaterialTheme.colorScheme.errorContainer),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Spacer(Modifier.weight(1f))
-                                Icon(
-                                    Icons.Filled.Delete,
-                                    contentDescription = "Delete",
-                                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.padding(end = 24.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .pointerInput(revealPx) {
+                                detectHorizontalDragGestures(
+                                    onHorizontalDrag = { _, dragAmount ->
+                                        val new = (offsetX.value + dragAmount).coerceIn(-revealPx, 0f)
+                                        scope.launch { offsetX.snapTo(new) }
+                                    },
+                                    onDragEnd = {
+                                        val target = if (offsetX.value <= -revealPx / 2f) -revealPx else 0f
+                                        scope.launch { offsetX.animateTo(target, tween(180)) }
+                                    },
+                                    onDragCancel = {
+                                        scope.launch { offsetX.animateTo(0f, tween(180)) }
+                                    }
                                 )
                             }
-                        }
                     ) {
+                        // Orange delete tray (under the card)
+                        Row(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .padding(vertical = 6.dp)
+                                .clip(cardShape)
+                                .background(Color(0xFFFF7A00)),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Spacer(Modifier.weight(1f))
+                            IconButton(
+                                onClick = { showConfirm = true },
+                                modifier = Modifier.padding(end = 16.dp)
+                            ) {
+                                Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = Color.White)
+                            }
+                        }
+
+                        // Foreground card slides horizontally
                         ElevatedCard(
-                            onClick = { nav.navigate(ChatRoutes.detail("chat_${contact.id}")) },
+                            onClick = {
+                                scope.launch { offsetX.animateTo(0f, tween(160)) }
+                                nav.navigate(ChatRoutes.detail("chat_${contact.id}"))
+                            },
                             shape = cardShape,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp)
+                                .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                         ) {
                             ListItem(
                                 leadingContent = { Avatar(name = contact.name, url = contact.avatarUrl) },
                                 headlineContent = { Text(contact.name) },
-                                supportingContent = { Text(contact.emailOrPhone ?: "") }
+                                // under headlineContent = { Text(contact.name) },
+                                supportingContent = {
+                                    val detail = remember(contact.emailOrPhone) {
+                                        contact.emailOrPhone?.takeIf { it.isNotBlank() } ?: "No contact info"
+                                    }
+                                    Text(
+                                        text = detail,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1
+                                    )
+                                }
+
                             )
                         }
                     }
+
+                    // Per-row confirm dialog
+                    if (showConfirm) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                showConfirm = false
+                                scope.launch { offsetX.animateTo(0f, tween(160)) }
+                            },
+                            title = { Text("Delete contact?") },
+                            text = { Text("This will remove the contact and its 1:1 chat/call logs. This can’t be undone.") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    showConfirm = false
+                                    vm.deleteContact(contact.id)
+                                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    showConfirm = false
+                                    scope.launch { offsetX.animateTo(0f, tween(160)) }
+                                }) { Text("Cancel") }
+                            }
+                        )
+                    }
                 }
+
 
             }
         }

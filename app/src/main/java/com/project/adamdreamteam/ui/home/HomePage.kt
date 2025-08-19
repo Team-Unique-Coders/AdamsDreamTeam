@@ -1,7 +1,6 @@
 package com.project.adamdreamteam.ui.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -15,13 +14,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
-import androidx.compose.material3.TopAppBarDefaults.centerAlignedTopAppBarColors
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,7 +27,6 @@ import com.project.adamdreamteam.R
 import com.project.adamdreamteam.navigation.Routes
 import com.project.adamdreamteam.ui.theme.LocalBrand
 
-// You can keep this here or move to ui/home/model/FeatureItem.kt later
 data class FeatureItem(
     val title: String,
     val iconRes: Int,
@@ -49,6 +45,7 @@ fun HomePage(onOpen: (String) -> Unit) {
         FeatureItem("Learn",    R.drawable.learn_icon,    Routes.LEARN),
         FeatureItem("Chat",     R.drawable.chat_icon,     Routes.CHAT),
         FeatureItem("Doctor",   R.drawable.doctor_icon,   Routes.DOCTOR),
+        // 🔑 THIS must point to Routes.LAUNDRY which equals "laundry_entry"
         FeatureItem("Laundry",  R.drawable.laundry_icon,  Routes.LAUNDRY),
         FeatureItem("Eat",      R.drawable.eat_icon,      Routes.EAT),
         FeatureItem("Hotel",    R.drawable.hotel_icon,    Routes.HOTEL),
@@ -58,7 +55,7 @@ fun HomePage(onOpen: (String) -> Unit) {
     )
     val featureByRoute = remember(featureItems) { featureItems.associateBy { it.route } }
 
-    // In-memory favorites (persist with DataStore later)
+    // In-memory favorites (persist later with DataStore if you want)
     var favoriteRoutes by rememberSaveable { mutableStateOf(listOf<String>()) }
     val favorites: List<FeatureItem> = favoriteRoutes.mapNotNull { featureByRoute[it] }
 
@@ -72,8 +69,8 @@ fun HomePage(onOpen: (String) -> Unit) {
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,     // solid blue
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary, // white text
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 title = { Text("I Click I Pay") },
@@ -87,7 +84,7 @@ fun HomePage(onOpen: (String) -> Unit) {
     ) { inner ->
 
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3), // 🔒 exactly 3 columns
+            columns = GridCells.Fixed(3),
             modifier = Modifier
                 .padding(inner)
                 .fillMaxSize(),
@@ -95,7 +92,7 @@ fun HomePage(onOpen: (String) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ---------- Favorites Section (full-width) ----------
+            // Favorites section (full-width)
             if (favorites.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column(Modifier.fillMaxWidth()) {
@@ -112,7 +109,6 @@ fun HomePage(onOpen: (String) -> Unit) {
                         }
                     }
                 }
-                // Section header for all services
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column {
                         Spacer(Modifier.height(8.dp))
@@ -121,7 +117,7 @@ fun HomePage(onOpen: (String) -> Unit) {
                 }
             }
 
-            // ---------- All services grid (3 columns) ----------
+            // All services grid
             items(featureItems, key = { it.route }) { feature ->
                 val isFav = favoriteRoutes.contains(feature.route)
                 FeatureTile(
@@ -135,7 +131,6 @@ fun HomePage(onOpen: (String) -> Unit) {
         }
     }
 
-    // ---------- Logout confirm dialog ----------
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
@@ -145,11 +140,13 @@ fun HomePage(onOpen: (String) -> Unit) {
                 TextButton(
                     onClick = {
                         showLogoutDialog = false
-                        // TODO: FirebaseAuth.getInstance().signOut() later
+                        // TODO: FirebaseAuth.getInstance().signOut()
                     }
                 ) { Text("Log out") }
             },
-            dismissButton = { TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") } }
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
+            }
         )
     }
 }
@@ -176,8 +173,8 @@ private fun FavoriteMiniTile(
     ) {
         Column(
             modifier = Modifier
-                .width(128.dp)   // a bit wider
-                .height(138.dp)  // and taller to fit bigger icon + label
+                .width(128.dp)
+                .height(138.dp)
                 .border(
                     width = 2.dp,
                     brush = Brush.linearGradient(LocalBrand.current.gradient),
@@ -201,7 +198,6 @@ private fun FavoriteMiniTile(
                 }
             }
 
-            // ⬆ bigger plate & icon
             Card(
                 shape = CircleShape,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -212,7 +208,7 @@ private fun FavoriteMiniTile(
                     Image(
                         painter = painterResource(item.iconRes),
                         contentDescription = item.title,
-                        modifier = Modifier.size(40.dp) // was 32
+                        modifier = Modifier.size(40.dp)
                     )
                 }
             }
@@ -245,7 +241,7 @@ private fun FeatureTile(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(184.dp), // taller to fit bigger icon + label comfortably
+            .height(184.dp),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -261,7 +257,6 @@ private fun FeatureTile(
                 )
                 .padding(12.dp)
         ) {
-            // Heart row (reserved space; no overlap)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -281,7 +276,6 @@ private fun FeatureTile(
                 }
             }
 
-            // Big icon plate + label
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -289,7 +283,6 @@ private fun FeatureTile(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // ⬆ bigger plate & icon
                 Card(
                     shape = CircleShape,
                     colors = CardDefaults.cardColors(
@@ -298,13 +291,13 @@ private fun FeatureTile(
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Box(
-                        modifier = Modifier.size(92.dp), // was 76
+                        modifier = Modifier.size(92.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
                             painter = painterResource(iconRes),
                             contentDescription = title,
-                            modifier = Modifier.size(56.dp) // was ~44
+                            modifier = Modifier.size(56.dp)
                         )
                     }
                 }
