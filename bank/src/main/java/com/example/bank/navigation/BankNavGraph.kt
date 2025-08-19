@@ -1,4 +1,3 @@
-// file: com/example/bank/navigation/BankNavGraph.kt
 package com.example.bank.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +22,9 @@ import com.example.bank.presentation.onboarding.CreateAccountScreen
 import com.example.bank.presentation.send.SendConfirmScreen
 import com.example.bank.presentation.send.SendMoneyScreen
 import com.example.bank.presentation.send.SendSuccessScreen
+import com.example.bank.presentation.request.RequestMoneyScreen            // ← NEW
+import com.example.bank.presentation.request.RequestConfirmScreen        // ← NEW
+import com.example.bank.presentation.request.RequestSuccessScreen        // ← NEW
 import com.example.bank.presentation.transaction.TransactionDetailScreen
 import kotlinx.coroutines.launch
 import kotlin.math.roundToLong
@@ -81,12 +83,10 @@ fun NavGraphBuilder.bankGraph(
                 monthsRange = monthsRange,
                 onClose = onClose,
                 onOpenChecking = { scope.launch { repo.openCheckingAccount() } },
-                onOpenTransaction = { txnId ->
-                    navController.navigate(BankRoutes.txnDetail(txnId))
-                },
+                onOpenTransaction = { txnId -> navController.navigate(BankRoutes.txnDetail(txnId)) },
                 onOpenFilters = { navController.navigate(BankRoutes.FILTERS) },
-                onOpenSend = { navController.navigate(BankRoutes.SEND) } ,
-                onOpenRequest = { /* navController.navigate(BankRoutes.REQUEST_MONEY) */ }
+                onOpenSend = { navController.navigate(BankRoutes.SEND) },
+                onOpenRequest = { navController.navigate(BankRoutes.REQUEST) }   // ← NEW
             )
         }
 
@@ -121,7 +121,6 @@ fun NavGraphBuilder.bankGraph(
                     navController.navigate(BankRoutes.sendConfirm(contactId, cents)) {
                         launchSingleTop = true
                     }
-                    // save note in currentBackStackEntry (optional)
                     navController.currentBackStackEntry?.savedStateHandle?.set("send_note", note)
                 }
             )
@@ -138,7 +137,6 @@ fun NavGraphBuilder.bankGraph(
             val contactId = entry.arguments?.getString("contactId")
             val amount = (entry.arguments?.getLong("amountCents") ?: 0L) / 100.0
 
-            // Read note safely from previousBackStackEntry
             val note: String? = navController.previousBackStackEntry
                 ?.savedStateHandle
                 ?.get<String?>("send_note")
@@ -151,11 +149,9 @@ fun NavGraphBuilder.bankGraph(
             val currentBalance = checking?.balance ?: 0.0
 
             if (contact == null) {
-                // show loading or pop back if contact not found
                 CircularProgressIndicator(modifier = Modifier.fillMaxSize())
             } else {
                 val scope = rememberCoroutineScope()
-
                 SendConfirmScreen(
                     contact = contact,
                     amount = amount,
@@ -180,9 +176,84 @@ fun NavGraphBuilder.bankGraph(
                 )
             }
         }
+
         // Step 3 — Success
         composable(BankRoutes.SEND_SUCCESS) {
             SendSuccessScreen(
+                onGoHome = {
+                    navController.navigate(BankRoutes.HOME) {
+                        popUpTo(BankRoutes.ROOT) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        // ===================== REQUEST FLOW (NEW) =====================
+
+        // Step 1 — RequestMoney
+        composable(BankRoutes.REQUEST) {
+            val contacts by repo.contacts().collectAsState(emptyList())
+            RequestMoneyScreen(
+                contacts = contacts,
+                onBack = { navController.popBackStack() },
+                onNext = { contactId, amount, note ->
+                    val cents = (amount * 100).roundToLong()
+                    navController.navigate(BankRoutes.requestConfirm(contactId, cents)) {
+                        launchSingleTop = true
+                    }
+                    navController.currentBackStackEntry?.savedStateHandle?.set("request_note", note)
+                }
+            )
+        }
+
+        // Step 2 — Confirm
+        // Step 2 — Confirm (no ledger mutation for a request)
+        composable(
+            route = BankRoutes.REQUEST_CONFIRM,
+            arguments = listOf(
+                navArgument("contactId") { type = NavType.StringType },
+                navArgument("amountCents") { type = NavType.LongType }
+            )
+        ) { entry ->
+            val contactId = entry.arguments?.getString("contactId")
+            val amount = (entry.arguments?.getLong("amountCents") ?: 0L) / 100.0
+
+            val note: String? = navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<String?>("request_note")
+
+            val contacts by repo.contacts().collectAsState(emptyList())
+            val contact = contacts.firstOrNull { it.id == contactId }
+
+            val accounts by repo.accounts().collectAsState(emptyList())
+            val checking = accounts.firstOrNull { it.type == AccountType.CHECKING }
+            val currentBalance = checking?.balance ?: 0.0
+
+            if (contact == null) {
+                CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+            } else {
+                RequestConfirmScreen(
+                    contact = contact,
+                    amount = amount,
+                    currentBalance = currentBalance,
+                    onBack = { navController.popBackStack() },
+                    onConfirmRequest = {
+                        // ✅ Do NOT add a transaction here.
+                        // Just navigate to "request sent" success screen.
+                        navController.navigate(BankRoutes.REQUEST_SUCCESS) {
+                            launchSingleTop = true
+                            popUpTo(BankRoutes.REQUEST) { inclusive = true }
+                        }
+                    }
+                )
+            }
+        }
+
+
+        // Step 3 — Success
+        composable(BankRoutes.REQUEST_SUCCESS) {
+            RequestSuccessScreen(
                 onGoHome = {
                     navController.navigate(BankRoutes.HOME) {
                         popUpTo(BankRoutes.ROOT) { inclusive = false }

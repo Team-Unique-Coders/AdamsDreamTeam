@@ -23,4 +23,10 @@ object BankRoutes {
     const val SEND_SUCCESS = "bank/send/success"
     fun sendConfirm(contactId: String, amountCents: Long) =
         "bank/send/confirm/$contactId/$amountCents"
+
+    const val REQUEST = "bank/request"
+    const val REQUEST_CONFIRM = "bank/request/confirm/{contactId}/{amountCents}"
+    fun requestConfirm(contactId: String, amountCents: Long) =
+        "bank/request/confirm/$contactId/$amountCents"
+    const val REQUEST_SUCCESS = "bank/request/success"
 }
