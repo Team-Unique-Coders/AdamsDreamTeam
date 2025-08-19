@@ -1,128 +1,161 @@
 package com.example.handyman.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.project.common_utils.ThreeValueSlider
 import com.project.common_utils.components.BackArrowIcon
-import com.project.common_utils.components.OrangeButton
-import com.project.common_utils.components.SearchField
 
+/* --- design tokens (match the rest of your feature) --- */
+private val Orange = Color(0xFFFF7A00)
+private val DividerGrey = Color(0xFFE7E8EB)
+private val LabelGrey = Color(0xFF9AA0A6)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HandymanFormScreen(
     onNext: () -> Unit,
     onBack: () -> Unit
 ) {
+    // Field state
+    var need by remember { mutableStateOf("Plumber") }
+    var problem by remember { mutableStateOf("Do not work") }
+
+    // Availability: 5 discrete stops → 8/11/14/17/20
+    val hours = listOf(8, 11, 14, 17, 20)
+    var availabilityIndex by remember { mutableIntStateOf(2) } // default 14h
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.Top
+            .background(Color.White)
+            .padding(horizontal = 16.dp)
     ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
+        /* ---------- Top bar ---------- */
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 8.dp)
+                .height(40.dp)
         ) {
-            BackArrowIcon(onClick = onBack)
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = "Your handyman",
-                style = MaterialTheme.typography.titleLarge
-            )
+            Row(
+                modifier = Modifier.matchParentSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                BackArrowIcon(onClick = onBack, tint = Orange)
+                Spacer(Modifier.width(12.dp))
+                Text("Your handyman", style = MaterialTheme.typography.titleLarge)
+            }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
-        // Search
-        var query by remember { mutableStateOf("") }
-        SearchField(
-            value = query,
-            onValueChange = { query = it },
-            placeholder = "Search service or pro...",
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        // Dropdowns
-        var service by remember { mutableStateOf("Plumber") }
-        var location by remember { mutableStateOf("New York") }
-
-        DropdownField(
-            label = "Service type",
+        /* ---------- Need dropdown ---------- */
+        LabeledDropdown(
+            label = "Need",
             options = listOf("Plumber", "Electrician", "Carpenter", "Painter", "Cleaner"),
-            selected = service,
-            onSelected = { service = it },
+            initial = need,
+            onPicked = { need = it },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(Modifier.height(12.dp))
 
-        DropdownField(
-            label = "Location",
-            options = listOf("New York", "San Francisco", "Austin", "Seattle", "Chicago"),
-            selected = location,
-            onSelected = { location = it },
+        /* ---------- Problem dropdown ---------- */
+        LabeledDropdown(
+            label = "Problem",
+            options = listOf("Do not work", "Leak / broken", "Installation", "Maintenance", "Other"),
+            initial = problem,
+            onPicked = { problem = it },
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(22.dp))
 
-        // Availability slider
-        Text(text = "Availability", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-        ThreeValueSlider(
-            valueRange = 0f..100f,
-            startValue = 0f,
-            midValue = 50f,
-            endValue = 100f,
-            onValueChange = { /* capture if needed */ },
-            modifier = Modifier.fillMaxWidth()
+        /* ---------- Availability ---------- */
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Availability", color = LabelGrey, style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.width(10.dp))
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(DividerGrey)
+            )
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        // labels row (8h 11h 14h 17h 20h)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            hours.forEachIndexed { idx, h ->
+                Text(
+                    text = "${h}h",
+                    style = if (idx == availabilityIndex)
+                        MaterialTheme.typography.bodyMedium
+                    else
+                        MaterialTheme.typography.bodySmall,
+                    color = if (idx == availabilityIndex) Color(0xFF30313A) else LabelGrey
+                )
+            }
+        }
+
+        // Discrete slider
+        Slider(
+            value = availabilityIndex.toFloat(),
+            onValueChange = { availabilityIndex = it.toInt().coerceIn(0, hours.lastIndex) },
+            valueRange = 0f..hours.lastIndex.toFloat(),
+            steps = hours.size - 2,
+            modifier = Modifier.fillMaxWidth(),
+            colors = SliderDefaults.colors(
+                thumbColor = Orange,
+                activeTrackColor = Orange,
+                inactiveTrackColor = DividerGrey
+            )
         )
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.weight(1f))
 
-        // CTA
-        OrangeButton(onClick = onNext, text = "Find handyman")
+        /* ---------- Full-width brand CTA (pill with shadow, inset-aware) ---------- */
+        NextButtonBar(
+            text = "Next",
+            onClick = onNext
+        )
     }
 }
 
-/* -------- Dropdown helper (Material3 DropdownMenu + clickable Text) ---------- */
+/* --------------------------------- helpers --------------------------------- */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DropdownField(
+private fun LabeledDropdown(
     label: String,
     options: List<String>,
-    selected: String,
-    onSelected: (String) -> Unit,
+    initial: String,
+    onPicked: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var current by remember { mutableStateOf(initial) }
+
+    Text(label, color = LabelGrey, style = MaterialTheme.typography.bodyMedium)
+    Spacer(Modifier.height(6.dp))
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -130,34 +163,69 @@ private fun DropdownField(
         modifier = modifier
     ) {
         OutlinedTextField(
-            value = selected,
+            value = current,
             onValueChange = {},
             readOnly = true,
-            label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier
-                .menuAnchor()      // anchor the menu to this field
-                .fillMaxWidth()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                .fillMaxWidth(),
+            singleLine = true,
+            shape = RoundedCornerShape(10.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = DividerGrey,
+                unfocusedBorderColor = DividerGrey,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            )
         )
 
-        // Use plain DropdownMenu + clickable Text rows
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            options.forEach { option ->
+            options.forEach { opt ->
                 Text(
-                    text = option,
+                    text = opt,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            onSelected(option)
+                            current = opt
+                            onPicked(opt)
                             expanded = false
                         }
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 )
             }
+        }
+    }
+}
+
+/* Bottom sticky orange pill that matches the app theme */
+@Composable
+private fun NextButtonBar(
+    text: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()             // respect gesture bar
+            .padding(horizontal = 16.dp)         // side insets (fixed: split padding)
+            .padding(bottom = 16.dp)             // bottom inset (fixed)
+            .shadow(20.dp, RoundedCornerShape(24.dp), clip = false),
+        contentAlignment = Alignment.Center
+    ) {
+        Button(
+            onClick = onClick,
+            shape = RoundedCornerShape(24.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Orange),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+        ) {
+            Text(text, color = Color.White, style = MaterialTheme.typography.titleMedium)
         }
     }
 }

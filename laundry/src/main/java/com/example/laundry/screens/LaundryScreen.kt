@@ -1,5 +1,6 @@
 package com.example.laundry.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -30,11 +31,7 @@ fun LaundryScreen(
     val screenHeight = configuration.screenHeightDp.dp
 
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onOpen("home") }) { // <- change "home" if needed
-                Icon(Icons.Filled.Home, contentDescription = "Go to Home")
-            }
-        }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier

@@ -1,6 +1,7 @@
 package com.example.laundry.screens
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,13 +47,12 @@ fun LaundryHomeScreen(
     providers: List<Provider>,
     onOpen: (String) -> Unit = {},
     onBack: () -> Unit = {},
+
 ) {
+    BackHandler {
+        onBack()   // delegate to navigation layer
+    }
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = {}) {
-                Icon(Icons.Filled.Home, contentDescription = "Go to Home")
-            }
-        }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -89,7 +89,9 @@ fun LaundryHomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconTextButton(com.project.common_utils.R.drawable.heart, "Favorites") { }
-                            IconTextButton(R.drawable.order, "Orders") { }
+                            IconTextButton(R.drawable.order, "Orders") {
+                                onOpen(LaundryDestinations.VIEW_ORDERS)
+                            }
                         }
                     }
 
@@ -205,11 +207,11 @@ fun WhiteBoxValue(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             WhiteBoxValueColumn("CHOOSE DATES", "20 Mar - 10h")
-            VerticalDivider(Modifier.height(52.dp))
+            VerticalDivider(Modifier.height(60.dp))
             WhiteBoxValueColumn("KG", "5")
-            VerticalDivider(Modifier.height(52.dp))
+            VerticalDivider(Modifier.height(60.dp))
             WhiteBoxValueColumn("DRY", "2")
-            VerticalDivider(Modifier.height(52.dp))
+            VerticalDivider(Modifier.height(60.dp))
             WhiteBoxValueColumn("IRONING", "Yes")
         }
         HorizontalDivider()
@@ -221,13 +223,15 @@ fun WhiteBoxValue(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Search location/Name")
                 Icon(
                     painter = painterResource(com.project.common_utils.R.drawable.search),
-                    contentDescription = "searchIcon"
+                    contentDescription = "searchIcon",
+                    modifier = Modifier.size(18.dp)
                 )
             }
             Button(

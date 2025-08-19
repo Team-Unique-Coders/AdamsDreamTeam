@@ -17,7 +17,6 @@ fun LaundryFeatureEntry(
     nav: NavHostController,
     popUpSelf: Boolean = true,
     selfRoute: String? = null,
-
 ) {
     LaunchedEffect(Unit) {
         nav.navigate(LaundryDestinations.GRAPH) {
